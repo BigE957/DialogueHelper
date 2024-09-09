@@ -1,0 +1,3 @@
+displayName = Dialogue Helper
+author = BigE957
+version = 0.1
