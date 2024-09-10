@@ -16,7 +16,7 @@ namespace DialogueHelper.Content.UI.Dialogue
 
     public class DialogueUISystem : ModSystem
     {
-        internal DialogueUIState DialogueUIState;
+        public DialogueUIState DialogueUIState;
 
         public UserInterface DialogueUI;
 
