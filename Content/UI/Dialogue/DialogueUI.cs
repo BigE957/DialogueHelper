@@ -701,7 +701,7 @@ namespace DialogueHelper.Content.UI.Dialogue
         }
         private static Texture2D FlipTexture2D(Texture2D input, bool vertical, bool horizontal)
         {
-            Texture2D flipped = new Texture2D(input.GraphicsDevice, input.Width, input.Height);
+            Texture2D flipped = new(input.GraphicsDevice, input.Width, input.Height);
             Color[] data = new Color[input.Width * input.Height];
             Color[] flipped_data = new Color[data.Length];
 

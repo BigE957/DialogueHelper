@@ -9,9 +9,7 @@ namespace DialogueHelper.Content.UI
             base.Update(gameTime);
 
             if (ContainsPoint(Main.MouseScreen))
-            {
                 Main.LocalPlayer.mouseInterface = true;
-            }
         }
     }
 }
