@@ -177,9 +177,6 @@ namespace DialogueHelper.Content.UI.Dialogue
             {
                 counter = 0;
 
-                float xResolutionScale = Main.screenWidth / 2560f;
-                float yResolutionScale = Main.screenHeight / 1440f;
-
                 DialogueTree CurrentTree = DialogueTrees[TreeKey];
                 Dialogue CurrentDialogue = CurrentTree.Dialogues[DialogueIndex];
                 Character CurrentSpeaker;
@@ -192,7 +189,11 @@ namespace DialogueHelper.Content.UI.Dialogue
                 bool returningSpeaker = false;
                 bool speakerRight = true;
 
-                BaseDialogueStyle style = (BaseDialogueStyle)Activator.CreateInstance(Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]].Style);
+                BaseDialogueStyle style;
+                if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
+                    style = (BaseDialogueStyle)Activator.CreateInstance(Characters[CurrentTree.Characters[ModContent.GetInstance<DialogueUISystem>().subSpeakerIndex]].Style);
+                else
+                    style = (BaseDialogueStyle)Activator.CreateInstance(Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]].Style);
 
                 if (ModContent.GetInstance<DialogueUISystem>() != null)
                 {
@@ -234,16 +235,19 @@ namespace DialogueHelper.Content.UI.Dialogue
                     {
                         ImageScale = CurrentSpeaker.Scale
                     };
-                    float startPositionX = 0;
-                    if (speakerRight)
-                        startPositionX = returningSpeaker ? Main.screenWidth / 1.3f : Main.screenWidth / 1.25f;
-                    else
-                        startPositionX = returningSpeaker ? Main.screenWidth * 0.075f : Main.screenWidth * 0.15f;
+                    Main.NewText(returningSpeaker);                   
 
                     if (justOpened || newSpeaker)
-                        SetRectangle(Speaker, left: startPositionX, top: Main.screenHeight, width: speakerFrameTexture.Width, height: speakerFrameTexture.Height);
+                        SetRectangle(Speaker, left: 0, top: Main.screenHeight, width: speakerFrameTexture.Width, height: speakerFrameTexture.Height);
                     else
-                        SetRectangle(Speaker, left: startPositionX, top: Main.screenHeight / 2.5f, width: speakerFrameTexture.Width, height: speakerFrameTexture.Height);
+                        SetRectangle(Speaker, left: 0, top: Main.screenHeight / 2.5f, width: speakerFrameTexture.Width, height: speakerFrameTexture.Height);
+
+                    if (speakerRight)
+                        Speaker.Left.Pixels = returningSpeaker ? Main.screenWidth / 1.2f : Main.screenWidth / 1.25f;
+                    else
+                        Speaker.Left.Pixels = returningSpeaker ? Main.screenWidth * 0f : Main.screenWidth * 0.05f;
+
+                    //Main.NewText(Main.screenWidth);
                     style.PreSpeakerCreate(TreeKey, DialogueIndex, Speaker);
                     Append(Speaker);
                     style.PostSpeakerCreate(TreeKey, DialogueIndex, Speaker);
@@ -277,18 +281,20 @@ namespace DialogueHelper.Content.UI.Dialogue
                     {
                         ImageScale = CurrentSubSpeaker.Scale
                     };
-                    float startPositionX = 0;
+                    
+                    SetRectangle(SubSpeaker, left: 0, top: Main.screenHeight / 2.5f, width: subSpeakerFrameTexture.Width, height: subSpeakerFrameTexture.Height);
+
                     if (speakerRight)
-                        startPositionX = newSpeaker || returningSpeaker ? Main.screenWidth * 0.15f : Main.screenWidth * 0.075f;
+                        SubSpeaker.Left.Pixels = newSpeaker || returningSpeaker ? Main.screenWidth * 0.15f : 0f;
                     else
-                        startPositionX = newSpeaker || returningSpeaker ? Main.screenWidth / 1.25f : Main.screenWidth / 1.35f;
-                    SetRectangle(SubSpeaker, left: startPositionX, top: Main.screenHeight / 2.5f, width: subSpeakerFrameTexture.Width, height: subSpeakerFrameTexture.Height);
+                        SubSpeaker.Left.Pixels = newSpeaker || returningSpeaker ? Main.screenWidth / 1.25f : Main.screenWidth / 1.35f;
+
                     style.PreSubSpeakerCreate(TreeKey, DialogueIndex, Speaker, SubSpeaker);
                     Append(SubSpeaker);
                     style.PostSubSpeakerCreate(TreeKey, DialogueIndex, Speaker, SubSpeaker);
                 }
 
-                SpawnTextBox(style);
+                SpawnTextBox();               
 
                 justOpened = false;
             }
@@ -296,26 +302,21 @@ namespace DialogueHelper.Content.UI.Dialogue
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-
-            float xResolutionScale = Main.screenWidth / 2560f;
-            float yResolutionScale = Main.screenHeight / 1440f;
+            //Main.NewText(Main.screenWidth);
 
             DialogueTree CurrentTree = DialogueTrees[TreeKey];
             Dialogue CurrentDialogue = CurrentTree.Dialogues[DialogueIndex];
-            /*
+
             BaseDialogueStyle style;
-            switch (CurrentTree.Characters[CurrentDialogue.CharacterIndex].StyleID)
-                {
-                    default:
-                        style = new DefaultDialogueStyle();
-                        break;
-                }
-            */
-            DefaultDialogueStyle style = new();
+            if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
+                style = (BaseDialogueStyle)Activator.CreateInstance(Characters[CurrentTree.Characters[ModContent.GetInstance<DialogueUISystem>().subSpeakerIndex]].Style);
+            else
+                style = (BaseDialogueStyle)Activator.CreateInstance(Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]].Style);
+
             if (ModContent.GetInstance<DialogueUISystem>().isDialogueOpen)
             {
                 style.PostUpdateActive(Textbox, Speaker, SubSpeaker);
-                //Main.NewText(SubSpeaker == null);
+                //Main.NewText(Speaker.Left.Pixels);
                 if (Speaker != null)
                 {
                     float goalHeight = Main.screenHeight / 2.5f;
@@ -325,19 +326,20 @@ namespace DialogueHelper.Content.UI.Dialogue
                         if (Speaker.Top.Pixels - goalHeight < 1)
                             Speaker.Top.Pixels = goalHeight;
                     }
-                    float goalLeft = Main.screenWidth / 1.25f;
-                    float goalRight = Main.screenWidth * 0.25f;
-                    if (ModContent.GetInstance<DialogueUISystem>().speakerRight && Speaker.Left.Pixels > goalLeft)
+                    float goalLeft = Main.screenWidth * 0.05f;
+                    float goalRight = Main.screenWidth / 1.25f;
+                    //Main.NewText(ModContent.GetInstance<DialogueUISystem>().speakerRight);
+                    if (ModContent.GetInstance<DialogueUISystem>().speakerRight && Speaker.Left.Pixels > goalRight)
                     {
-                        Speaker.Left.Pixels -= (Speaker.Left.Pixels - goalLeft) / 20;
-                        if (Speaker.Left.Pixels - goalLeft < 1)
-                            Speaker.Left.Pixels = goalLeft;
+                        Speaker.Left.Pixels -= (Speaker.Left.Pixels - goalRight) / 20;
+                        if (Speaker.Left.Pixels - goalRight < 1)
+                            Speaker.Left.Pixels = goalRight;
                     }
                     else if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && Speaker.Left.Pixels < goalLeft)
                     {
-                        Speaker.Left.Pixels += (goalRight - Speaker.Left.Pixels) / 20;
+                        Speaker.Left.Pixels += (goalLeft - Speaker.Left.Pixels) / 20;
                         if (goalLeft - Speaker.Left.Pixels < 1)
-                            Speaker.Left.Pixels = goalRight;
+                            Speaker.Left.Pixels = goalLeft;
                     }
                     Character speakerCharacter = Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]];
                     Expression currentExpression = speakerCharacter.Expressions[CurrentDialogue.ExpressionIndex];
@@ -369,16 +371,16 @@ namespace DialogueHelper.Content.UI.Dialogue
                 {
                     if (ModContent.GetInstance<DialogueUISystem>().dismissSubSpeaker)
                     {
-                        float goalRight = 2200 * xResolutionScale;
-                        float goalLeft = -600 * xResolutionScale;
+                        float goalRight = Main.screenWidth + SubSpeaker.Width.Pixels;
+                        float goalLeft = -SubSpeaker.Width.Pixels;
 
-                        if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels < 2200f)
+                        if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels < goalRight)
                         {
                             SubSpeaker.Left.Pixels += (goalRight - SubSpeaker.Left.Pixels) / 20;
                             if (goalRight - SubSpeaker.Left.Pixels < 10)
                                 SubSpeaker.Left.Pixels = goalRight;
                         }
-                        else if (ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels > -600)
+                        else if (ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels > goalLeft)
                         {
                             SubSpeaker.Left.Pixels -= (goalLeft - SubSpeaker.Left.Pixels) / 20;
                             if (goalLeft - SubSpeaker.Left.Pixels < 10)
@@ -394,16 +396,16 @@ namespace DialogueHelper.Content.UI.Dialogue
                     }
                     else
                     {
-                        float goalRight = Main.screenWidth + SubSpeaker.Width.Pixels;
-                        float goalLeft = -SubSpeaker.Width.Pixels;
+                        float goalLeft = 0f;
+                        float goalRight = Main.screenWidth / 1.2f;
 
-                        if (ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels > 0f)
+                        if (ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels > 0f - Main.screenWidth * 0.1f)
                         {
                             SubSpeaker.Left.Pixels -= (SubSpeaker.Left.Pixels - goalLeft) / 20;
                             if (SubSpeaker.Left.Pixels - goalLeft < 1)
                                 SubSpeaker.Left.Pixels = goalLeft;
                         }
-                        else if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels < 1700f)
+                        else if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels < Main.screenWidth * 1.1f)
                         {
                             SubSpeaker.Left.Pixels += (goalRight - SubSpeaker.Left.Pixels) / 20;
                             if (goalRight - SubSpeaker.Left.Pixels < 1)
@@ -417,7 +419,7 @@ namespace DialogueHelper.Content.UI.Dialogue
                 style.PostUpdateClosing(Textbox, Speaker, SubSpeaker);
 
                 float goalRight = Main.screenWidth + Speaker.Width.Pixels;
-                float goalLeft = -Speaker.Width.Pixels;
+                float goalLeft = -Speaker.Width.Pixels * 2;
 
                 if (Speaker != null)
                 {
@@ -429,8 +431,8 @@ namespace DialogueHelper.Content.UI.Dialogue
                     }
                     else if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && Speaker.Left.Pixels > goalLeft)
                     {
-                        Speaker.Left.Pixels -= (goalLeft - Speaker.Left.Pixels) / 20;
-                        if (goalLeft - Speaker.Left.Pixels < 10)
+                        Speaker.Left.Pixels -= (Speaker.Left.Pixels - goalLeft) / 20;
+                        if (Speaker.Left.Pixels - goalLeft < 10)
                             Speaker.Left.Pixels = goalLeft;
                     }
                 }
@@ -532,8 +534,9 @@ namespace DialogueHelper.Content.UI.Dialogue
                     ModContent.GetInstance<DialogueUISystem>().UpdateDialogueUI(TreeKey, heading);
             }
         }
-        public void SpawnTextBox(BaseDialogueStyle style)
+        public void SpawnTextBox()
         {
+            BaseDialogueStyle style;
             float xResolutionScale = Main.screenWidth / 2560f;
             float yResolutionScale = Main.screenHeight / 1440f;
 
@@ -543,22 +546,42 @@ namespace DialogueHelper.Content.UI.Dialogue
 
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
                 style = (BaseDialogueStyle)Activator.CreateInstance(Characters[CurrentTree.Characters[ModContent.GetInstance<DialogueUISystem>().subSpeakerIndex]].Style);
+            else
+                style = (BaseDialogueStyle)Activator.CreateInstance(Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]].Style);
             Textbox = new MouseBlockingUIPanel();
+            if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
+            {
+                Character FormerCharacter = Characters[CurrentTree.Characters[ModContent.GetInstance<DialogueUISystem>().subSpeakerIndex]];
+                if (style.BackgroundColor.HasValue)
+                    Textbox.BackgroundColor = style.BackgroundColor.Value;
+                else if (FormerCharacter.PrimaryColor.HasValue)
+                    Textbox.BackgroundColor = FormerCharacter.PrimaryColor.Value;
+                else
+                    Textbox.BackgroundColor = new Color(73, 94, 171);
 
-            if (style.BackgroundColor.HasValue)
-                Textbox.BackgroundColor = style.BackgroundColor.Value;
-            else if (CurrentCharacter.PrimaryColor.HasValue)
-                Textbox.BackgroundColor = CurrentCharacter.PrimaryColor.Value;
+                if (style.BackgroundBorderColor.HasValue)
+                    Textbox.BorderColor = style.BackgroundBorderColor.Value;
+                else if (FormerCharacter.SecondaryColor.HasValue)
+                    Textbox.BorderColor = FormerCharacter.SecondaryColor.Value;
+                else
+                    Textbox.BorderColor = Color.Black;
+            }
             else
-                Textbox.BackgroundColor = new Color(73, 94, 171);
+            {
+                if (style.BackgroundColor.HasValue)
+                    Textbox.BackgroundColor = style.BackgroundColor.Value;
+                else if (CurrentCharacter.PrimaryColor.HasValue)
+                    Textbox.BackgroundColor = CurrentCharacter.PrimaryColor.Value;
+                else
+                    Textbox.BackgroundColor = new Color(73, 94, 171);
 
-            if (style.BackgroundBorderColor.HasValue)
-                Textbox.BorderColor = style.BackgroundBorderColor.Value;
-            else if (CurrentCharacter.SecondaryColor.HasValue)
-                Textbox.BorderColor = CurrentCharacter.SecondaryColor.Value;
-            else
-                Textbox.BorderColor = Color.Black;
-
+                if (style.BackgroundBorderColor.HasValue)
+                    Textbox.BorderColor = style.BackgroundBorderColor.Value;
+                else if (CurrentCharacter.SecondaryColor.HasValue)
+                    Textbox.BorderColor = CurrentCharacter.SecondaryColor.Value;
+                else
+                    Textbox.BorderColor = Color.Black;
+            }
             style.OnTextboxCreate(Textbox, Speaker, SubSpeaker);
             Textbox.OnLeftClick += OnBoxClick;
             Append(Textbox);
@@ -663,6 +686,8 @@ namespace DialogueHelper.Content.UI.Dialogue
                 style.PostUICreate(TreeKey, DialogueIndex, Textbox, Speaker, SubSpeaker);
                 ModContent.GetInstance<DialogueUISystem>().styleSwapped = false;
             }
+            else
+                style.PostUICreate(TreeKey, DialogueIndex, Textbox, Speaker, SubSpeaker);
         }
         private static bool CanAffordCost(Player player, ItemStack price)
         {

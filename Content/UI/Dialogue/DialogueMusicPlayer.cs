@@ -18,7 +18,7 @@ namespace DialogueHelper.Content.UI.Dialogue
             Dialogue CurrentDialogue = DialogueHolder.DialogueTrees[UI.TreeKey].Dialogues[UI.DialogueIndex];
             if (CurrentDialogue.MusicID == -1 || !(!Main.gameMenu && !Main.dedServ))
                 return;
-            Main.musicBox2 = CurrentDialogue.MusicID - 1;
+            Main.musicBox2 = CurrentDialogue.MusicID;
         }
     }
 }

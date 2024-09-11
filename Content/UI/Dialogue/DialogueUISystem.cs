@@ -76,10 +76,10 @@ namespace DialogueHelper.Content.UI.Dialogue
 
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
         {
-            int mouseTextIndex = layers.FindIndex(layer => layer.Name.Equals("Vanilla: NPC / Sign Dialog"));
-            if (mouseTextIndex != -1)
+            int SettingsIndex = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Settings Button"));
+            if (SettingsIndex != -1)
             {
-                layers.Insert(mouseTextIndex, new LegacyGameInterfaceLayer(
+                layers.Insert(SettingsIndex, new LegacyGameInterfaceLayer(
                     "Windfall: Displays the Dialogue UI",
                     delegate
                     {
@@ -110,6 +110,7 @@ namespace DialogueHelper.Content.UI.Dialogue
             CurrentSpeaker = DialogueHolder.Characters[currentTree.Characters[currentDialogue.CharacterID]];
             SubSpeaker = null;
             subSpeakerIndex = -1;
+            Main.NewText(Main.screenWidth);
 
             DialogueOpen?.Invoke(TreeKey, DialogueIndex, 0);
 
@@ -139,14 +140,14 @@ namespace DialogueHelper.Content.UI.Dialogue
 
             if (currentTree.Characters[currentDialogue.CharacterID] == DialogueHolder.Characters.First(c => c.Value == CurrentSpeaker).Key)
             {
-                //Main.NewText("Speaker Unchanged");
+                Main.NewText("Speaker Unchanged");
                 newSpeaker = false;
                 newSubSpeaker = false;
                 returningSpeaker = false;
             }
             else if (SubSpeaker == null)
             {
-                //Main.NewText("New speaker! No subspeaker");
+                Main.NewText("New speaker! No subspeaker");
                 newSpeaker = true;
                 newSubSpeaker = true;
                 returningSpeaker = false;
@@ -157,7 +158,7 @@ namespace DialogueHelper.Content.UI.Dialogue
             }
             else
             {
-                //Main.NewText("New speaker! Yes subspeaker.");
+                Main.NewText("New speaker! Yes subspeaker.");
                 newSpeaker = false;
                 newSubSpeaker = true;
                 returningSpeaker = true;

@@ -15,12 +15,13 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
             bool spawnBottom = ModContent.GetInstance<DialogueUISystem>().justOpened || ModContent.GetInstance<DialogueUISystem>().styleSwapped;
             bool newSubSpeaker = ModContent.GetInstance<DialogueUISystem>().newSubSpeaker;
             textbox.SetPadding(0);
-            float startX = 0;
+            Main.NewText("Default Created");
+            SetRectangle(textbox, left: 0, top: spawnBottom ? Main.screenHeight * 1.05f : Main.screenHeight / 1.75f, width: Main.screenWidth / 1.75f, height: Main.screenHeight / 3);
             if (newSubSpeaker && !ModContent.GetInstance<DialogueUISystem>().styleSwapped)
-                startX = speakerRight ? Main.screenWidth - textbox.Width.Pixels - Main.screenWidth / 32f : Main.screenWidth / 32f;
+                textbox.Left.Pixels = speakerRight ? Main.screenWidth - textbox.Width.Pixels - Main.screenWidth / 12f : Main.screenWidth / 12f;
             else
-                startX = speakerRight ? Main.screenWidth / 32f : Main.screenWidth - textbox.Width.Pixels - Main.screenWidth / 32f;
-            SetRectangle(textbox, left: startX, top: spawnBottom ? Main.screenHeight * 1.05f : Main.screenHeight / 1.75f, width: Main.screenWidth / 1.3f, height: Main.screenHeight / 3);
+                textbox.Left.Pixels = speakerRight ? Main.screenWidth / 12f : Main.screenWidth - textbox.Width.Pixels - Main.screenWidth / 12f;
+            
         }
         public override void OnDialogueTextCreate(DialogueText text)
         {
@@ -47,27 +48,48 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
         {
             DialogueTree CurrentTree = DialogueHolder.DialogueTrees[treeKey];
             Dialogue CurrentDialogue = CurrentTree.Dialogues[dialogueIndex];
-            Character CurrentCharacter = DialogueHolder.Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]];
+            Character CurrentCharacter = DialogueHolder.Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]];           
 
             MouseBlockingUIPanel NameBox;
             NameBox = new MouseBlockingUIPanel();
             NameBox.SetPadding(0);
             SetRectangle(NameBox, left: -25f, top: -25f, width: 300f, height: 60f);
-            if (CurrentCharacter.PrimaryColor.HasValue)
-                NameBox.BackgroundColor = CurrentCharacter.PrimaryColor.Value;
+            if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
+            {
+                Character FormerCharacter = DialogueHolder.Characters[CurrentTree.Characters[ModContent.GetInstance<DialogueUISystem>().subSpeakerIndex]];
+                if (FormerCharacter.PrimaryColor.HasValue)
+                    NameBox.BackgroundColor = FormerCharacter.PrimaryColor.Value;
+                else
+                    NameBox.BackgroundColor = new Color(73, 94, 171);
+
+                if (FormerCharacter.SecondaryColor.HasValue)
+                    NameBox.BorderColor = FormerCharacter.SecondaryColor.Value;
+            }
             else
-                NameBox.BackgroundColor = new Color(73, 94, 171);
+            {
+                if (CurrentCharacter.PrimaryColor.HasValue)
+                    NameBox.BackgroundColor = CurrentCharacter.PrimaryColor.Value;
+                else
+                    NameBox.BackgroundColor = new Color(73, 94, 171);
 
-            if (CurrentCharacter.SecondaryColor.HasValue)
-                NameBox.BorderColor = CurrentCharacter.SecondaryColor.Value;
-
+                if (CurrentCharacter.SecondaryColor.HasValue)
+                    NameBox.BorderColor = CurrentCharacter.SecondaryColor.Value;
+            }
             textbox.Append(NameBox);
 
             UIText NameText;
             if (CurrentDialogue.CharacterID == -1)
                 NameText = new UIText("...");
             else
-                NameText = new UIText(CurrentCharacter.Name, 1f, true);
+            {
+                if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
+                {
+                    Character FormerCharacter = DialogueHolder.Characters[CurrentTree.Characters[ModContent.GetInstance<DialogueUISystem>().subSpeakerIndex]];
+                    NameText = new UIText(FormerCharacter.Name, 1f, true);
+                }
+                else
+                    NameText = new UIText(CurrentCharacter.Name, 1f, true);
+            }
             NameText.Width.Pixels = NameBox.Width.Pixels;
             NameText.HAlign = 0.5f;
             NameText.Top.Set(15, 0);
@@ -82,7 +104,7 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
             {
                 if (!TextboxOffScreen(textbox))
                 {
-                    float goalHeight = 1400f * yResolutionScale;
+                    float goalHeight = Main.screenHeight * 1.1f;
 
                     textbox.Top.Pixels += (goalHeight - textbox.Top.Pixels) / 20;
                     if (goalHeight - textbox.Top.Pixels < 10)
@@ -95,7 +117,7 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
                     textbox.RemoveAllChildren();
                     textbox.Remove();
 
-                    ModContent.GetInstance<DialogueUISystem>().DialogueUIState.SpawnTextBox(this);
+                    ModContent.GetInstance<DialogueUISystem>().DialogueUIState.SpawnTextBox();
                 }
             }
             else
