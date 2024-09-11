@@ -110,7 +110,6 @@ namespace DialogueHelper.Content.UI.Dialogue
             CurrentSpeaker = DialogueHolder.Characters[currentTree.Characters[currentDialogue.CharacterID]];
             SubSpeaker = null;
             subSpeakerIndex = -1;
-            Main.NewText(Main.screenWidth);
 
             DialogueOpen?.Invoke(TreeKey, DialogueIndex, 0);
 
@@ -140,14 +139,14 @@ namespace DialogueHelper.Content.UI.Dialogue
 
             if (currentTree.Characters[currentDialogue.CharacterID] == DialogueHolder.Characters.First(c => c.Value == CurrentSpeaker).Key)
             {
-                Main.NewText("Speaker Unchanged");
+                //Main.NewText("Speaker Unchanged");
                 newSpeaker = false;
                 newSubSpeaker = false;
                 returningSpeaker = false;
             }
             else if (SubSpeaker == null)
             {
-                Main.NewText("New speaker! No subspeaker");
+                //Main.NewText("New speaker! No subspeaker");
                 newSpeaker = true;
                 newSubSpeaker = true;
                 returningSpeaker = false;
@@ -158,7 +157,7 @@ namespace DialogueHelper.Content.UI.Dialogue
             }
             else
             {
-                Main.NewText("New speaker! Yes subspeaker.");
+                //Main.NewText("New speaker! Yes subspeaker.");
                 newSpeaker = false;
                 newSubSpeaker = true;
                 returningSpeaker = true;
@@ -200,7 +199,7 @@ namespace DialogueHelper.Content.UI.Dialogue
     /// <returns>
     /// Represents a character able to be used within a <see cref="DialogueTree"/>.
     /// </returns>
-    public struct Character(Expression[] expressions, string name, float scale = 2f, Type style = null, int textDelay = 3, Color? primaryColor = null, Color? secondaryColor = null)
+    public struct Character(string name, Expression[] expressions, float scale = 1f, Type style = null, int textDelay = 3, Color? primaryColor = null, Color? secondaryColor = null)
     {
         public string Name = name;
         public float Scale = scale;
@@ -281,12 +280,13 @@ namespace DialogueHelper.Content.UI.Dialogue
         public bool DismissSubSpeaker = dismissSubSpeaker;
     }
 
-    public struct Expression(string title, int frameCount, int frameRate, bool loop = true)
+    public struct Expression(string title, int frameCount, int frameRate, bool loop = true, bool animateCondition = true)
     {
         public string Title = title;
         public int FrameCount = frameCount;
         public int FrameRate = frameRate;
         public bool Loop = loop;
+        public bool AnimateCondition = frameCount != 1 && animateCondition;
     }
 
     public struct ItemStack(int id, int stack)

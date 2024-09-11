@@ -15,7 +15,6 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
             bool spawnBottom = ModContent.GetInstance<DialogueUISystem>().justOpened || ModContent.GetInstance<DialogueUISystem>().styleSwapped;
             bool newSubSpeaker = ModContent.GetInstance<DialogueUISystem>().newSubSpeaker;
             textbox.SetPadding(0);
-            Main.NewText("Default Created");
             SetRectangle(textbox, left: 0, top: spawnBottom ? Main.screenHeight * 1.05f : Main.screenHeight / 1.75f, width: Main.screenWidth / 1.75f, height: Main.screenHeight / 3);
             if (newSubSpeaker && !ModContent.GetInstance<DialogueUISystem>().styleSwapped)
                 textbox.Left.Pixels = speakerRight ? Main.screenWidth - textbox.Width.Pixels - Main.screenWidth / 12f : Main.screenWidth / 12f;
@@ -104,7 +103,7 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
             {
                 if (!TextboxOffScreen(textbox))
                 {
-                    float goalHeight = Main.screenHeight * 1.1f;
+                    float goalHeight = Main.screenHeight * 1.5f;
 
                     textbox.Top.Pixels += (goalHeight - textbox.Top.Pixels) / 20;
                     if (goalHeight - textbox.Top.Pixels < 10)
