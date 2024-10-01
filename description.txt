@@ -1,1 +1,0 @@
-A Library Mod which provides the tools for creating in-depth Character Dialogue.

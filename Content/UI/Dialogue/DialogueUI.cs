@@ -3,6 +3,16 @@ using Terraria.UI;
 using static DialogueHelper.Content.UI.Dialogue.DialogueHolder;
 using Terraria.UI.Chat;
 using DialogueHelper.Content.UI.Dialogue.DialogueStyles;
+using Microsoft.Xna.Framework;
+using Terraria;
+using Terraria.ModLoader;
+using System;
+using Microsoft.Xna.Framework.Graphics;
+using ReLogic.Content;
+using Terraria.GameContent;
+using System.Collections.Generic;
+using System.Linq;
+using Terraria.Localization;
 
 namespace DialogueHelper.Content.UI.Dialogue
 {

@@ -1,4 +1,6 @@
-﻿using Terraria.GameContent.UI.Elements;
+﻿using Microsoft.Xna.Framework;
+using Terraria;
+using Terraria.GameContent.UI.Elements;
 
 namespace DialogueHelper.Content.UI
 {

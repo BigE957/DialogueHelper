@@ -3,6 +3,10 @@ using Terraria.GameContent.UI.Elements;
 using Terraria.UI;
 using Terraria.ModLoader.UI;
 using DialogueHelper.Content.UI.Dialogue;
+using Terraria;
+using Terraria.ModLoader;
+using Microsoft.Xna.Framework;
+using System.Linq;
 
 namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
 {
@@ -165,8 +169,8 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
                         button.Left.Pixels = textbox.Width.Pixels / (2 * responseButtons.Length) + (textbox.Width.Pixels * (float)(i / (float)responseButtons.Length) - button.Width.Pixels / 2);
                         button.Left.Pixels -= 3;
 
-                        button.Width.Pixels = Clamp(button.Width.Pixels + ButtonSize.X / 30, 0f, ButtonSize.X);
-                        button.Height.Pixels = Clamp(button.Height.Pixels + ButtonSize.Y / 30, 0f, ButtonSize.Y);
+                        button.Width.Pixels = MathHelper.Clamp(button.Width.Pixels + ButtonSize.X / 30, 0f, ButtonSize.X);
+                        button.Height.Pixels = MathHelper.Clamp(button.Height.Pixels + ButtonSize.Y / 30, 0f, ButtonSize.Y);
 
                         button.Top.Pixels += button.Height.Pixels / 2;
 
@@ -178,7 +182,7 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
                                     continue;
                                 //Main.NewText(child.Width.Pixels);
                                 UIText textChild = (UIText)child;
-                                textChild.SetText(textChild.Text, Clamp(0.875f * ((button.Width.Pixels - ButtonSize.X / 1.5f) / ButtonSize.X) * 3f, 0f, 0.875f), false);
+                                textChild.SetText(textChild.Text, MathHelper.Clamp(0.875f * ((button.Width.Pixels - ButtonSize.X / 1.5f) / ButtonSize.X) * 3f, 0f, 0.875f), false);
                                 textChild.Top.Pixels = button.Top.Pixels - (int)(button.Height.Pixels / 2) + 4;
                                 textChild.IsWrapped = true;
                                 textChild.WrappedTextBottomPadding = -2f;
