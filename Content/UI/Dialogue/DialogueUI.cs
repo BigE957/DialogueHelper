@@ -180,7 +180,7 @@ namespace DialogueHelper.Content.UI.Dialogue
         private int frameCounter = 1;
         public override void OnInitialize()
         {
-            if (ModContent.GetInstance<DialogueUISystem>().CurrentTree == null)
+            if (ModContent.GetInstance<DialogueUISystem>() == null)
                 return;
             else
             {
@@ -219,7 +219,7 @@ namespace DialogueHelper.Content.UI.Dialogue
                 if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
                     style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(FormerCharacter.Style));
                 else
-                    style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style));
+                    style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style) ?? typeof(DefaultDialogueStyle));
 
                 style.PreUICreate(DialogueIndex);
                 if (CurrentDialogue.CharacterID != -1)
@@ -313,7 +313,7 @@ namespace DialogueHelper.Content.UI.Dialogue
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
                 style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(FormerCharacter.Style));
             else
-                style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style));
+                style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style) ?? typeof(DefaultDialogueStyle));
 
             if (ModContent.GetInstance<DialogueUISystem>().isDialogueOpen)
             {
@@ -473,7 +473,8 @@ namespace DialogueHelper.Content.UI.Dialogue
         {
             DialogueText dialogue = (DialogueText)Textbox.Children.Where(c => c.GetType() == typeof(DialogueText)).First();
             DialogueTree CurrentTree = ModContent.GetInstance<DialogueUISystem>().CurrentTree;
-            if (CurrentTree.Dialogues[DialogueIndex].Responses == null && !dialogue.crawling)
+            Dialogue CurrentDialogue = CurrentTree.Dialogues[DialogueIndex];
+            if (CurrentDialogue.Responses == null && !dialogue.crawling)
             {
                 ModContent.GetInstance<DialogueUISystem>().ButtonClick?.Invoke(TreeKey, DialogueIndex, 0);
 
@@ -483,15 +484,10 @@ namespace DialogueHelper.Content.UI.Dialogue
                     ModContent.GetInstance<DialogueUISystem>().DialogueClose?.Invoke(TreeKey, DialogueIndex, 0);
                 }
                 else
-                {
                     ModContent.GetInstance<DialogueUISystem>().UpdateDialogueUI(TreeKey, DialogueIndex + 1);
-                }
             }
             else if (dialogue.crawling)
-            {
-                string key = TreeKey.Split("/")[1];
-                dialogue.textIndex = Language.GetTextValue("lol" + key + ".Messages." + DialogueIndex).Length;
-            }
+                dialogue.textIndex = CurrentDialogue.Text.Length;
         }
         internal void OnButtonClick(UIMouseEvent evt, UIElement listeningElement)
         {
@@ -538,7 +534,7 @@ namespace DialogueHelper.Content.UI.Dialogue
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
                 style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(FormerCharacter.Style));
             else
-                style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style));
+                style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style) ?? typeof(DefaultDialogueStyle));
             Textbox = new MouseBlockingUIPanel();
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
             {
@@ -577,11 +573,10 @@ namespace DialogueHelper.Content.UI.Dialogue
             Append(Textbox);
             if (!ModContent.GetInstance<DialogueUISystem>().swappingStyle)
             {
-                string key = TreeKey.Split("/")[1];
                 DialogueText DialogueText = new()
                 {
                     boxWidth = Textbox.Width.Pixels,
-                    Text = Language.GetTextValue("lol" + key + ".Messages." + DialogueIndex)
+                    Text = CurrentDialogue.Text
                 };
                 if (CurrentDialogue.TextDelay > 0)
                     DialogueText.textDelay = CurrentDialogue.TextDelay;
@@ -623,8 +618,6 @@ namespace DialogueHelper.Content.UI.Dialogue
                         Append(button);
 
                         UIText text;
-
-                        key = TreeKey.Split("/")[1];
                         text = new(availableResponses[i].Title, 0f);
 
                         text.Width.Pixels = style.ButtonSize.X;

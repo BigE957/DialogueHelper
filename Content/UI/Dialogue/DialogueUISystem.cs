@@ -3,12 +3,6 @@ using DialogueHelper.Content.UI.Dialogue;
 using System.Text.Json;
 using Terraria.UI;
 using System.IO;
-using Microsoft.Xna.Framework;
-using System.Collections.Generic;
-using System;
-using Terraria.Localization;
-using Terraria.ModLoader;
-using Terraria;
 
 namespace DialogueHelper.Content.UI.Dialogue
 {
@@ -131,7 +125,7 @@ namespace DialogueHelper.Content.UI.Dialogue
 
             // Fall back to english if not found
             if (!DialogueSource.FileExists(path))
-                path = Path.Combine("Localization/Characters", "en-US", "skibidi.json");
+                path = Path.Combine("Localization/Characters", "en-US", CurrentTree.Characters[currentDialogue.CharacterID] + ".json");
 
             // Throw if we cant find english either
             if (!DialogueSource.FileExists(path))
@@ -140,6 +134,9 @@ namespace DialogueHelper.Content.UI.Dialogue
             stream = DialogueSource.GetFileStream(path);
 
             CurrentSpeaker = JsonSerializer.Deserialize<Character>(stream);
+
+            stream.Close();
+
             SubSpeaker = null;
 
             DialogueOpen?.Invoke(TreeKey, DialogueIndex, 0);
@@ -166,7 +163,7 @@ namespace DialogueHelper.Content.UI.Dialogue
 
             // Fall back to english if not found
             if (!DialogueSource.FileExists(path))
-                path = Path.Combine("Localization/Characters", "en-US", "skibidi.json");
+                path = Path.Combine("Localization/Characters", "en-US", CurrentTree.Characters[currentDialogue.CharacterID] + ".json");
 
             // Throw if we cant find english either
             if (!DialogueSource.FileExists(path))
@@ -174,12 +171,14 @@ namespace DialogueHelper.Content.UI.Dialogue
             Stream stream = DialogueSource.GetFileStream(path);
 
             Character upcomingSpeaker = JsonSerializer.Deserialize<Character>(stream);
+
+            stream.Close();
             #endregion
 
             if (upcomingSpeaker.Style != CurrentSpeaker.Style)
                 swappingStyle = true;
 
-            if (upcomingSpeaker == CurrentSpeaker)
+            if (upcomingSpeaker.Name == CurrentSpeaker.Name)
             {
                 //Main.NewText("Speaker Unchanged");
                 newSpeaker = false;
@@ -265,23 +264,6 @@ namespace DialogueHelper.Content.UI.Dialogue
             int b = Convert.ToInt16(color.B);
             return new Color(r, g, b);
         }
-
-        public static bool operator ==(Character c1, Character c2) => c1.Equals(c2);
-
-        public static bool operator !=(Character c1, Character c2) => !c1.Equals(c2);
-
-        public override bool Equals(object obj)
-        {
-            if (obj == null) return false;
-            if (obj.GetType() != typeof(Character)) return false;
-            if (((Character)obj).Name != Name) return false;
-            if (((Character)obj).Scale != Scale) return false;
-            if (((Character)obj).Expressions != Expressions) return false;
-            if (((Character)obj).Style != Style) return false;
-            return true;
-        }
-
-        public override int GetHashCode() => Name.GetHashCode();
     }
 
     public class DialogueTree
