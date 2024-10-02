@@ -534,7 +534,7 @@ namespace DialogueHelper.Content.UI.Dialogue
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
                 style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(FormerCharacter.Style));
             else
-                style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style));// ?? typeof(DefaultDialogueStyle));
+                style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style) ?? typeof(DefaultDialogueStyle));
             Textbox = new MouseBlockingUIPanel();
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
             {
