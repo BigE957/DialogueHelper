@@ -3,6 +3,12 @@ using DialogueHelper.Content.UI.Dialogue;
 using System.Text.Json;
 using Terraria.UI;
 using System.IO;
+using Microsoft.Xna.Framework;
+using System.Collections.Generic;
+using System;
+using Terraria.Localization;
+using Terraria.ModLoader;
+using Terraria;
 
 namespace DialogueHelper.Content.UI.Dialogue
 {
@@ -286,7 +292,7 @@ namespace DialogueHelper.Content.UI.Dialogue
     public class Response
     {
         public string Title { get; set; }
-        public int DialogueIndex { get; set; }
+        public int Heading { get; set; }
         public bool Requirement { get; set; }
         public ItemStack Cost { get; set; }
         public bool DismissSubSpeaker { get; set; }

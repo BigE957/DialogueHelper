@@ -102,7 +102,7 @@ namespace DialogueHelper.Content.UI.Dialogue
                 {
                     TextToPrint += printedSnippets[i].TextOriginal;
                 }
-                List<string> textLines = [.. Utils.WordwrapString(TextToPrint, FontAssets.MouseText.Value, (int)((Parent.Width.Pixels + Width.Pixels) / 1.5f), 250, out _)];
+                List<string> textLines = [.. Utils.WordwrapString(TextToPrint, FontAssets.MouseText.Value, (int)((Parent.Width.Pixels + Width.Pixels) / 1.55f), 250, out _)];
                 textLines.RemoveAll(text => string.IsNullOrEmpty(text));
 
                 string PreviousLineColorHex = "";
@@ -508,7 +508,7 @@ namespace DialogueHelper.Content.UI.Dialogue
                 if (response.DismissSubSpeaker)
                     ModContent.GetInstance<DialogueUISystem>().dismissSubSpeaker = true;
 
-                int heading = response.DialogueIndex;
+                int heading = response.Heading;
                 if (heading == -1 || heading == -2 && !(CurrentTree.Dialogues.Length > DialogueIndex + 1))
                 {
                     ModContent.GetInstance<DialogueUISystem>().isDialogueOpen = false;
@@ -534,7 +534,7 @@ namespace DialogueHelper.Content.UI.Dialogue
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
                 style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(FormerCharacter.Style));
             else
-                style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style) ?? typeof(DefaultDialogueStyle));
+                style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style));// ?? typeof(DefaultDialogueStyle));
             Textbox = new MouseBlockingUIPanel();
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
             {
