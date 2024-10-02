@@ -1,5 +1,5 @@
-﻿using Terraria;
-using Terraria.ModLoader;
+﻿using Terraria.ModLoader;
+using Terraria;
 
 namespace DialogueHelper.Content.UI.Dialogue
 {
@@ -9,10 +9,10 @@ namespace DialogueHelper.Content.UI.Dialogue
         {
             if (ModContent.GetInstance<DialogueUISystem>() != null && !ModContent.GetInstance<DialogueUISystem>().isDialogueOpen)
                 return;
-            
+
             DialogueUISystem dialogueUISystem = ModContent.GetInstance<DialogueUISystem>();
             DialogueUIState UI = dialogueUISystem.DialogueUIState;
-            Dialogue CurrentDialogue = DialogueHolder.DialogueTrees[UI.TreeKey].Dialogues[UI.DialogueIndex];
+            Dialogue CurrentDialogue = dialogueUISystem.CurrentTree.Dialogues[UI.DialogueIndex];
             if (CurrentDialogue.MusicID == -1 || !(!Main.gameMenu && !Main.dedServ))
                 return;
             Main.musicBox2 = CurrentDialogue.MusicID;

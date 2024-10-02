@@ -2,7 +2,6 @@
 using Terraria.GameContent.UI.Elements;
 using Terraria.UI;
 using Terraria.ModLoader.UI;
-using DialogueHelper.Content.UI.Dialogue;
 using Terraria;
 using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
@@ -24,7 +23,7 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
                 textbox.Left.Pixels = speakerRight ? Main.screenWidth - textbox.Width.Pixels - Main.screenWidth / 12f : Main.screenWidth / 12f;
             else
                 textbox.Left.Pixels = speakerRight ? Main.screenWidth / 12f : Main.screenWidth - textbox.Width.Pixels - Main.screenWidth / 12f;
-            
+
         }
         public override void OnDialogueTextCreate(DialogueText text)
         {
@@ -47,11 +46,10 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
             text.VAlign = 0f;
             costHolder.HAlign = 0.5f;
         }
-        public override void PostUICreate(string treeKey, int dialogueIndex, UIPanel textbox, UIImage speaker, UIImage subSpeaker)
+        public override void PostUICreate(int dialogueIndex, UIPanel textbox, UIImage speaker, UIImage subSpeaker)
         {
-            DialogueTree CurrentTree = DialogueHolder.DialogueTrees[treeKey];
-            Dialogue CurrentDialogue = CurrentTree.Dialogues[dialogueIndex];
-            Character CurrentCharacter = DialogueHolder.Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]];           
+            Dialogue CurrentDialogue = ModContent.GetInstance<DialogueUISystem>().CurrentTree.Dialogues[dialogueIndex];
+            Character CurrentCharacter = ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker;
 
             MouseBlockingUIPanel NameBox;
             NameBox = new MouseBlockingUIPanel();
@@ -59,24 +57,24 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
             SetRectangle(NameBox, left: -25f, top: -25f, width: 300f, height: 60f);
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
             {
-                Character FormerCharacter = DialogueHolder.Characters[CurrentTree.Characters[ModContent.GetInstance<DialogueUISystem>().subSpeakerIndex]];
-                if (FormerCharacter.PrimaryColor.HasValue)
-                    NameBox.BackgroundColor = FormerCharacter.PrimaryColor.Value;
+                Character FormerCharacter = ModContent.GetInstance<DialogueUISystem>().SubSpeaker;
+                if (FormerCharacter.PrimaryColor != null)
+                    NameBox.BackgroundColor = FormerCharacter.getPrimaryColor();
                 else
                     NameBox.BackgroundColor = new Color(73, 94, 171);
 
-                if (FormerCharacter.SecondaryColor.HasValue)
-                    NameBox.BorderColor = FormerCharacter.SecondaryColor.Value;
+                if (FormerCharacter.SecondaryColor != null)
+                    NameBox.BorderColor = FormerCharacter.getSecondaryColor();
             }
             else
             {
-                if (CurrentCharacter.PrimaryColor.HasValue)
-                    NameBox.BackgroundColor = CurrentCharacter.PrimaryColor.Value;
+                if (CurrentCharacter.PrimaryColor != null)
+                    NameBox.BackgroundColor = CurrentCharacter.getPrimaryColor();
                 else
                     NameBox.BackgroundColor = new Color(73, 94, 171);
 
-                if (CurrentCharacter.SecondaryColor.HasValue)
-                    NameBox.BorderColor = CurrentCharacter.SecondaryColor.Value;
+                if (CurrentCharacter.SecondaryColor != null)
+                    NameBox.BorderColor = CurrentCharacter.getSecondaryColor();
             }
             textbox.Append(NameBox);
 
@@ -87,7 +85,7 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
             {
                 if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
                 {
-                    Character FormerCharacter = DialogueHolder.Characters[CurrentTree.Characters[ModContent.GetInstance<DialogueUISystem>().subSpeakerIndex]];
+                    Character FormerCharacter = ModContent.GetInstance<DialogueUISystem>().SubSpeaker;
                     NameText = new UIText(FormerCharacter.Name, 1f, true);
                 }
                 else

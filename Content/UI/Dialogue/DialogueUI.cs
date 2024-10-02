@@ -1,6 +1,5 @@
 ﻿using Terraria.GameContent.UI.Elements;
 using Terraria.UI;
-using static DialogueHelper.Content.UI.Dialogue.DialogueHolder;
 using Terraria.UI.Chat;
 using DialogueHelper.Content.UI.Dialogue.DialogueStyles;
 using Microsoft.Xna.Framework;
@@ -181,37 +180,29 @@ namespace DialogueHelper.Content.UI.Dialogue
         private int frameCounter = 1;
         public override void OnInitialize()
         {
-            if (DialogueTrees.Count == 0)
+            if (ModContent.GetInstance<DialogueUISystem>().CurrentTree == null)
                 return;
-            if (DialogueTrees.Count != 0)
+            else
             {
                 counter = 0;
 
-                DialogueTree CurrentTree = DialogueTrees[TreeKey];
+                DialogueTree CurrentTree = ModContent.GetInstance<DialogueUISystem>().CurrentTree;
                 Dialogue CurrentDialogue = CurrentTree.Dialogues[DialogueIndex];
-                Character CurrentSpeaker;
-                Character CurrentSubSpeaker;
+                Character CurrentCharacter = ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker;
+                Character FormerCharacter = ModContent.GetInstance<DialogueUISystem>().SubSpeaker;
 
-                int subSpeakerIndex = -1;
                 bool justOpened = true;
                 bool newSpeaker = false;
                 bool newSubSpeaker = false;
                 bool returningSpeaker = false;
                 bool speakerRight = true;
 
-                BaseDialogueStyle style;
-                if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
-                    style = (BaseDialogueStyle)Activator.CreateInstance(Characters[CurrentTree.Characters[ModContent.GetInstance<DialogueUISystem>().subSpeakerIndex]].Style);
-                else
-                    style = (BaseDialogueStyle)Activator.CreateInstance(Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]].Style);
-
                 if (ModContent.GetInstance<DialogueUISystem>() != null)
                 {
                     if (ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker != null)
-                        CurrentSpeaker = (Character)ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker;
+                        CurrentCharacter = (Character)ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker;
                     if (ModContent.GetInstance<DialogueUISystem>().SubSpeaker != null)
-                        CurrentSubSpeaker = (Character)ModContent.GetInstance<DialogueUISystem>().SubSpeaker;
-                    subSpeakerIndex = ModContent.GetInstance<DialogueUISystem>().subSpeakerIndex;
+                        FormerCharacter = (Character)ModContent.GetInstance<DialogueUISystem>().SubSpeaker;
                     justOpened = ModContent.GetInstance<DialogueUISystem>().justOpened;
                     newSpeaker = ModContent.GetInstance<DialogueUISystem>().newSpeaker;
                     newSubSpeaker = ModContent.GetInstance<DialogueUISystem>().newSubSpeaker;
@@ -220,20 +211,24 @@ namespace DialogueHelper.Content.UI.Dialogue
                 }
                 else
                 {
-                    CurrentSpeaker = Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]];
-                    CurrentSubSpeaker = new Character("Bill", [new()]);
+                    CurrentCharacter = ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker;
+                    FormerCharacter = null;
                 }
-                style.PreUICreate(TreeKey, DialogueIndex);
+
+                BaseDialogueStyle style;
+                if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
+                    style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(FormerCharacter.Style));
+                else
+                    style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style));
+
+                style.PreUICreate(DialogueIndex);
                 if (CurrentDialogue.CharacterID != -1)
                 {
                     //Main.NewText("Create Speaker: " + CurrentDialogue.CharacterIndex);
-                    CurrentSpeaker = Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]];
-                    string expressionID = CurrentSpeaker.Expressions[CurrentDialogue.ExpressionIndex].Title;
+                    CurrentCharacter = ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker;
 
-                    string AssetPath = CharacterAssetPathes[Characters.First(c => c.Value == CurrentSpeaker).Key.Split("/")[0].Replace("/", "")];
-                    string SpeakerID = Characters.First(c => c.Value == CurrentSpeaker).Key.Split("/")[1];
-                    Texture2D speakerTexture = ModContent.Request<Texture2D>($"{AssetPath}/{SpeakerID}/{SpeakerID}_{expressionID}", AssetRequestMode.ImmediateLoad).Value;
-                    Rectangle speakerFrame = new(0, 0, speakerTexture.Bounds.Width, speakerTexture.Bounds.Height / CurrentSpeaker.Expressions[CurrentDialogue.ExpressionIndex].FrameCount);
+                    Texture2D speakerTexture = ModContent.Request<Texture2D>(CurrentCharacter.Expressions[CurrentDialogue.ExpressionIndex].Path, AssetRequestMode.ImmediateLoad).Value;
+                    Rectangle speakerFrame = new(0, 0, speakerTexture.Bounds.Width, speakerTexture.Bounds.Height / CurrentCharacter.Expressions[CurrentDialogue.ExpressionIndex].FrameCount);
 
                     Texture2D speakerFrameTexture = new(Main.graphics.GraphicsDevice, speakerFrame.Width, speakerFrame.Height);
                     Color[] data = new Color[speakerFrame.Width * speakerFrame.Height];
@@ -243,7 +238,7 @@ namespace DialogueHelper.Content.UI.Dialogue
                         speakerFrameTexture = FlipTexture2D(speakerFrameTexture, false, true);
                     Speaker = new(speakerFrameTexture)
                     {
-                        ImageScale = CurrentSpeaker.Scale
+                        ImageScale = CurrentCharacter.Scale
                     };
 
                     if (justOpened || newSpeaker)
@@ -257,19 +252,15 @@ namespace DialogueHelper.Content.UI.Dialogue
                         Speaker.Left.Pixels = returningSpeaker ? 0f + (Speaker.Width.Pixels / 2f) : Main.screenWidth * 0.05f + (Speaker.Width.Pixels / 2f);
 
                     //Main.NewText(Main.screenWidth);
-                    style.PreSpeakerCreate(TreeKey, DialogueIndex, Speaker);
+                    style.PreSpeakerCreate(DialogueIndex, Speaker);
                     Append(Speaker);
-                    style.PostSpeakerCreate(TreeKey, DialogueIndex, Speaker);
+                    style.PostSpeakerCreate(DialogueIndex, Speaker);
                 }
-                if (subSpeakerIndex != -1)
+                if (FormerCharacter != null)
                 {
                     //Main.NewText("Create Sub-Speaker: " + subSpeakerIndex);
-                    CurrentSubSpeaker = Characters[CurrentTree.Characters[subSpeakerIndex]];
-                    string AssetPath = CharacterAssetPathes[Characters.First(c => c.Value == CurrentSubSpeaker).Key.Split("/")[0].Replace("/", "")];
-                    string subSpeakerID = Characters.First(c => c.Value == CurrentSubSpeaker).Key.Split("/")[1];
-                    string expressionID = CurrentSubSpeaker.Expressions[0].Title;
-                    Texture2D subSpeakerTexture = ModContent.Request<Texture2D>($"{AssetPath}/{subSpeakerID}/{subSpeakerID}_{expressionID}", AssetRequestMode.ImmediateLoad).Value;
-                    Rectangle subSpeakerFrame = new(0, 0, subSpeakerTexture.Bounds.Width, subSpeakerTexture.Bounds.Height / CurrentSubSpeaker.Expressions[0].FrameCount);
+                    Texture2D subSpeakerTexture = ModContent.Request<Texture2D>(FormerCharacter.Expressions[0].Path, AssetRequestMode.ImmediateLoad).Value;
+                    Rectangle subSpeakerFrame = new(0, 0, subSpeakerTexture.Bounds.Width, subSpeakerTexture.Bounds.Height / FormerCharacter.Expressions[0].FrameCount);
 
                     Texture2D subSpeakerFrameTexture = new(Main.graphics.GraphicsDevice, subSpeakerFrame.Width, subSpeakerFrame.Height);
                     Color[] data = new Color[subSpeakerFrame.Width * subSpeakerFrame.Height];
@@ -288,9 +279,9 @@ namespace DialogueHelper.Content.UI.Dialogue
                         subSpeakerFrameTexture = FlipTexture2D(subSpeakerTexture, false, true);
                     SubSpeaker = new(subSpeakerFrameTexture)
                     {
-                        ImageScale = CurrentSubSpeaker.Scale
+                        ImageScale = FormerCharacter.Scale
                     };
-                    
+
                     SetRectangle(SubSpeaker, left: 0, top: Main.screenHeight - SubSpeaker.Height.Pixels + 16, width: subSpeakerFrameTexture.Width, height: subSpeakerFrameTexture.Height);
 
                     if (speakerRight)
@@ -298,12 +289,12 @@ namespace DialogueHelper.Content.UI.Dialogue
                     else
                         SubSpeaker.Left.Pixels = newSpeaker || returningSpeaker ? Main.screenWidth / 1.25f - (SubSpeaker.Width.Pixels / 2f) : Main.screenWidth / 1.35f - (SubSpeaker.Width.Pixels / 2f);
 
-                    style.PreSubSpeakerCreate(TreeKey, DialogueIndex, Speaker, SubSpeaker);
+                    style.PreSubSpeakerCreate(DialogueIndex, Speaker, SubSpeaker);
                     Append(SubSpeaker);
-                    style.PostSubSpeakerCreate(TreeKey, DialogueIndex, Speaker, SubSpeaker);
+                    style.PostSubSpeakerCreate(DialogueIndex, Speaker, SubSpeaker);
                 }
 
-                SpawnTextBox();               
+                SpawnTextBox();
 
                 justOpened = false;
             }
@@ -313,14 +304,16 @@ namespace DialogueHelper.Content.UI.Dialogue
             base.Update(gameTime);
             //Main.NewText(Main.screenWidth);
 
-            DialogueTree CurrentTree = DialogueTrees[TreeKey];
+            DialogueTree CurrentTree = ModContent.GetInstance<DialogueUISystem>().CurrentTree;
             Dialogue CurrentDialogue = CurrentTree.Dialogues[DialogueIndex];
+            Character CurrentCharacter = ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker;
+            Character FormerCharacter = ModContent.GetInstance<DialogueUISystem>().SubSpeaker;
 
             BaseDialogueStyle style;
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
-                style = (BaseDialogueStyle)Activator.CreateInstance(Characters[CurrentTree.Characters[ModContent.GetInstance<DialogueUISystem>().subSpeakerIndex]].Style);
+                style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(FormerCharacter.Style));
             else
-                style = (BaseDialogueStyle)Activator.CreateInstance(Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]].Style);
+                style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style));
 
             if (ModContent.GetInstance<DialogueUISystem>().isDialogueOpen)
             {
@@ -350,8 +343,7 @@ namespace DialogueHelper.Content.UI.Dialogue
                         if (goalLeft - Speaker.Left.Pixels < 1)
                             Speaker.Left.Pixels = goalLeft;
                     }
-                    Character speakerCharacter = Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]];
-                    Expression currentExpression = speakerCharacter.Expressions[CurrentDialogue.ExpressionIndex];
+                    Expression currentExpression = CurrentCharacter.Expressions[CurrentDialogue.ExpressionIndex];
                     if (currentExpression.FrameCount != 1 && currentExpression.AnimateCondition && currentExpression.FrameRate != 0 && counter % currentExpression.FrameRate == 0)
                     {
                         frameCounter++;
@@ -362,11 +354,9 @@ namespace DialogueHelper.Content.UI.Dialogue
                             else
                                 frameCounter = currentExpression.FrameCount;
                         }
-                        string AssetPath = CharacterAssetPathes[Characters.First(c => c.Value == speakerCharacter).Key.Split("/")[0].Replace("/", "")];
-                        string speakerID = Characters.First(c => c.Value == speakerCharacter).Key.Split("/")[1];
 
-                        Texture2D speakerTexture = ModContent.Request<Texture2D>($"{AssetPath}/{speakerID}/{speakerID}_{currentExpression.Title}", AssetRequestMode.ImmediateLoad).Value;
-                        Rectangle speakerFrame = speakerTexture.Frame(1, speakerCharacter.Expressions[CurrentDialogue.ExpressionIndex].FrameCount, 0, frameCounter - 1);
+                        Texture2D speakerTexture = ModContent.Request<Texture2D>(currentExpression.Path, AssetRequestMode.ImmediateLoad).Value;
+                        Rectangle speakerFrame = speakerTexture.Frame(1, CurrentCharacter.Expressions[CurrentDialogue.ExpressionIndex].FrameCount, 0, frameCounter - 1);
 
                         Texture2D speakerFrameTexture = new(Main.graphics.GraphicsDevice, speakerFrame.Width, speakerFrame.Height);
                         Color[] data = new Color[speakerFrame.Width * speakerFrame.Height];
@@ -482,7 +472,7 @@ namespace DialogueHelper.Content.UI.Dialogue
         internal void OnBoxClick(UIMouseEvent evt, UIElement listeningElement)
         {
             DialogueText dialogue = (DialogueText)Textbox.Children.Where(c => c.GetType() == typeof(DialogueText)).First();
-            DialogueTree CurrentTree = DialogueTrees[TreeKey];
+            DialogueTree CurrentTree = ModContent.GetInstance<DialogueUISystem>().CurrentTree;
             if (CurrentTree.Dialogues[DialogueIndex].Responses == null && !dialogue.crawling)
             {
                 ModContent.GetInstance<DialogueUISystem>().ButtonClick?.Invoke(TreeKey, DialogueIndex, 0);
@@ -500,31 +490,22 @@ namespace DialogueHelper.Content.UI.Dialogue
             else if (dialogue.crawling)
             {
                 string key = TreeKey.Split("/")[1];
-                dialogue.textIndex = Language.GetTextValue(CurrentTree.LocalizationPath + key + ".Messages." + DialogueIndex).Length;
+                dialogue.textIndex = Language.GetTextValue("lol" + key + ".Messages." + DialogueIndex).Length;
             }
         }
         internal void OnButtonClick(UIMouseEvent evt, UIElement listeningElement)
         {
-            DialogueTree CurrentTree = DialogueTrees[TreeKey];
+            DialogueTree CurrentTree = ModContent.GetInstance<DialogueUISystem>().CurrentTree;
             int responseCount = CurrentTree.Dialogues[DialogueIndex].Responses.Length;
             UIText text = (UIText)listeningElement.Children.ToArray().First();
             int buttonID = 0;
             for (int i = 0; i < responseCount; i++)
             {
-                if (CurrentTree.Dialogues[DialogueIndex].Responses[i].Localize)
-                {
-                    string key = TreeKey.Split("/")[1];
-                    if (text.Text == Language.GetTextValue(CurrentTree.LocalizationPath + key + ".Responses." + CurrentTree.Dialogues[DialogueIndex].Responses[i].Title))
-                        buttonID = i;
-                }
-                else
-                {
-                    if (text.Text == CurrentTree.Dialogues[DialogueIndex].Responses[i].Title)
-                        buttonID = i;
-                }
+                if (text.Text == CurrentTree.Dialogues[DialogueIndex].Responses[i].Title)
+                    buttonID = i;
             }
             Response response = CurrentTree.Dialogues[DialogueIndex].Responses[buttonID];
-            if (response.Cost == null || CanAffordCost(Main.LocalPlayer, response.Cost.Value))
+            if (response.Cost == null || CanAffordCost(Main.LocalPlayer, response.Cost))
             {
                 ModContent.GetInstance<DialogueUISystem>().ButtonClick?.Invoke(TreeKey, DialogueIndex, buttonID);
 
@@ -549,29 +530,29 @@ namespace DialogueHelper.Content.UI.Dialogue
             float xResolutionScale = Main.screenWidth / 2560f;
             float yResolutionScale = Main.screenHeight / 1440f;
 
-            DialogueTree CurrentTree = DialogueTrees[TreeKey];
+            DialogueTree CurrentTree = ModContent.GetInstance<DialogueUISystem>().CurrentTree;
             Dialogue CurrentDialogue = CurrentTree.Dialogues[DialogueIndex];
-            Character CurrentCharacter = Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]];
+            Character CurrentCharacter = ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker;
+            Character FormerCharacter = ModContent.GetInstance<DialogueUISystem>().SubSpeaker;
 
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
-                style = (BaseDialogueStyle)Activator.CreateInstance(Characters[CurrentTree.Characters[ModContent.GetInstance<DialogueUISystem>().subSpeakerIndex]].Style);
+                style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(FormerCharacter.Style));
             else
-                style = (BaseDialogueStyle)Activator.CreateInstance(Characters[CurrentTree.Characters[CurrentDialogue.CharacterID]].Style);
+                style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style));
             Textbox = new MouseBlockingUIPanel();
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
             {
-                Character FormerCharacter = Characters[CurrentTree.Characters[ModContent.GetInstance<DialogueUISystem>().subSpeakerIndex]];
                 if (style.BackgroundColor.HasValue)
                     Textbox.BackgroundColor = style.BackgroundColor.Value;
-                else if (FormerCharacter.PrimaryColor.HasValue)
-                    Textbox.BackgroundColor = FormerCharacter.PrimaryColor.Value;
+                else if (FormerCharacter.PrimaryColor != null)
+                    Textbox.BackgroundColor = FormerCharacter.getPrimaryColor();
                 else
                     Textbox.BackgroundColor = new Color(73, 94, 171);
 
                 if (style.BackgroundBorderColor.HasValue)
                     Textbox.BorderColor = style.BackgroundBorderColor.Value;
-                else if (FormerCharacter.SecondaryColor.HasValue)
-                    Textbox.BorderColor = FormerCharacter.SecondaryColor.Value;
+                else if (FormerCharacter.SecondaryColor != null)
+                    Textbox.BorderColor = FormerCharacter.getSecondaryColor();
                 else
                     Textbox.BorderColor = Color.Black;
             }
@@ -579,15 +560,15 @@ namespace DialogueHelper.Content.UI.Dialogue
             {
                 if (style.BackgroundColor.HasValue)
                     Textbox.BackgroundColor = style.BackgroundColor.Value;
-                else if (CurrentCharacter.PrimaryColor.HasValue)
-                    Textbox.BackgroundColor = CurrentCharacter.PrimaryColor.Value;
+                else if (CurrentCharacter.PrimaryColor != null)
+                    Textbox.BackgroundColor = CurrentCharacter.getPrimaryColor();
                 else
                     Textbox.BackgroundColor = new Color(73, 94, 171);
 
                 if (style.BackgroundBorderColor.HasValue)
                     Textbox.BorderColor = style.BackgroundBorderColor.Value;
-                else if (CurrentCharacter.SecondaryColor.HasValue)
-                    Textbox.BorderColor = CurrentCharacter.SecondaryColor.Value;
+                else if (CurrentCharacter.SecondaryColor != null)
+                    Textbox.BorderColor = CurrentCharacter.getSecondaryColor();
                 else
                     Textbox.BorderColor = Color.Black;
             }
@@ -600,7 +581,7 @@ namespace DialogueHelper.Content.UI.Dialogue
                 DialogueText DialogueText = new()
                 {
                     boxWidth = Textbox.Width.Pixels,
-                    Text = Language.GetTextValue(CurrentTree.LocalizationPath + key + ".Messages." + DialogueIndex)
+                    Text = Language.GetTextValue("lol" + key + ".Messages." + DialogueIndex)
                 };
                 if (CurrentDialogue.TextDelay > 0)
                     DialogueText.textDelay = CurrentDialogue.TextDelay;
@@ -623,8 +604,8 @@ namespace DialogueHelper.Content.UI.Dialogue
 
                         if (style.ButtonColor.HasValue)
                             color = style.ButtonColor.Value;
-                        else if (CurrentCharacter.PrimaryColor.HasValue)
-                            color = CurrentCharacter.PrimaryColor.Value;
+                        else if (CurrentCharacter.PrimaryColor != null)
+                            color = CurrentCharacter.getPrimaryColor();
                         else
                             color = new Color(73, 94, 171);
                         color.A = 125;
@@ -632,8 +613,8 @@ namespace DialogueHelper.Content.UI.Dialogue
 
                         if (style.ButtonBorderColor.HasValue)
                             button.BorderColor = style.ButtonBorderColor.Value;
-                        else if (CurrentCharacter.SecondaryColor.HasValue)
-                            button.BorderColor = CurrentCharacter.SecondaryColor.Value;
+                        else if (CurrentCharacter.SecondaryColor != null)
+                            button.BorderColor = CurrentCharacter.getSecondaryColor();
                         else
                             button.BorderColor = Color.Black;
 
@@ -644,10 +625,7 @@ namespace DialogueHelper.Content.UI.Dialogue
                         UIText text;
 
                         key = TreeKey.Split("/")[1];
-                        if (availableResponses[i].Localize)
-                            text = new(Language.GetTextValue(CurrentTree.LocalizationPath + key + ".Responses." + availableResponses[i].Title), 0f);
-                        else
-                            text = new(availableResponses[i].Title, 0f);
+                        text = new(availableResponses[i].Title, 0f);
 
                         text.Width.Pixels = style.ButtonSize.X;
                         text.IsWrapped = true;
@@ -692,11 +670,11 @@ namespace DialogueHelper.Content.UI.Dialogue
                     }
                 }
 
-                style.PostUICreate(TreeKey, DialogueIndex, Textbox, Speaker, SubSpeaker);
+                style.PostUICreate(DialogueIndex, Textbox, Speaker, SubSpeaker);
                 ModContent.GetInstance<DialogueUISystem>().styleSwapped = false;
             }
             else
-                style.PostUICreate(TreeKey, DialogueIndex, Textbox, Speaker, SubSpeaker);
+                style.PostUICreate(DialogueIndex, Textbox, Speaker, SubSpeaker);
         }
         private static bool CanAffordCost(Player player, ItemStack price)
         {
