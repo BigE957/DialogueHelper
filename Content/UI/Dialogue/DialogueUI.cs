@@ -690,6 +690,8 @@ namespace DialogueHelper.Content.UI.Dialogue
             int itemID = price.ItemID;
             if (itemID == -1)
                 itemID = price.TypeToID();
+            if (itemID == -1) //If the ItemType is unable to be found, then returns false; as the player can't pay with something that doesn't exist :P
+                return false;
             foreach (Item item in player.inventory.Where(i => i.type == itemID))
             {
                 if (item.stack >= amount)

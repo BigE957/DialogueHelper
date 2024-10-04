@@ -366,6 +366,8 @@ namespace DialogueHelper.Content.UI.Dialogue
         public int TypeToID()
         {
             Type itemType = Type.GetType(TypePath);
+            if (itemType == null)
+                return -1;
             var possibleItem = Activator.CreateInstance(itemType);
             if (possibleItem.GetType() != typeof(ModItem))
                 return -1;
