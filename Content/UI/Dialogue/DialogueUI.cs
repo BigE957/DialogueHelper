@@ -174,6 +174,12 @@ namespace DialogueHelper.Content.UI.Dialogue
         public UIImage Speaker;
         public UIImage SubSpeaker;
 
+        public delegate bool DialogueNotifier(string treeKey, int dialogueID, int buttonID);
+        public DialogueNotifier ResponseRequirementCheck;
+
+        public delegate bool CharacterNotifier(string characterName, string expressionName);
+        public CharacterNotifier AnimationConditionCheck;
+
         public string TreeKey;
         public int DialogueIndex = 0;
         private int counter = 0;
@@ -344,7 +350,7 @@ namespace DialogueHelper.Content.UI.Dialogue
                             Speaker.Left.Pixels = goalLeft;
                     }
                     Expression currentExpression = CurrentCharacter.Expressions[CurrentDialogue.ExpressionIndex];
-                    if (currentExpression.FrameCount != 1 && currentExpression.AnimateCondition && currentExpression.FrameRate != 0 && counter % currentExpression.FrameRate == 0)
+                    if (currentExpression.FrameCount != 1 && currentExpression.FrameRate != 0 && (!currentExpression.HasAnimateCondition || AnimationConditionCheck.Invoke(CurrentCharacter.Name, currentExpression.Title)) && counter % currentExpression.FrameRate == 0)
                     {
                         frameCounter++;
                         if (frameCounter > currentExpression.FrameCount)
@@ -589,7 +595,12 @@ namespace DialogueHelper.Content.UI.Dialogue
 
                 if (CurrentDialogue.Responses != null)
                 {
-                    Response[] availableResponses = CurrentDialogue.Responses.Where(r => r.Requirement).ToArray();
+                    Response[] availableResponses = [];
+                    for(int i = 0; i < CurrentDialogue.Responses.Length; i++)
+                    {
+                        if (!CurrentDialogue.Responses[i].HasRequirement || ResponseRequirementCheck.Invoke(TreeKey, DialogueIndex, i))
+                            availableResponses.Append(CurrentDialogue.Responses[i]);
+                    }
                     int responseCount = availableResponses.Length;
 
                     for (int i = 0; i < responseCount; i++)

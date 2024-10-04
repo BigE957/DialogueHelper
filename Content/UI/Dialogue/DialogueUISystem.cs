@@ -269,13 +269,13 @@ namespace DialogueHelper.Content.UI.Dialogue
     /// </returns>
     public class Character
     {
-        public string Name { get; set; }
-        public float Scale { get; set; }
+        public string Name { get; set; }        
         public Expression[] Expressions { get; set; }
-        public string Style { get; set; }
-        public int TextDelay { get; set; }
-        public string PrimaryColor { get; set; }
-        public string SecondaryColor { get; set; }
+        public float Scale { get; set; } = 1f;
+        public string Style { get; set; } = "DialogueHelper.Content.UI.Dialogue.DialogueStyles.DefaultDialogueStyle";
+        public int TextDelay { get; set; } = 3;
+        public string PrimaryColor { get; set; } = null;
+        public string SecondaryColor { get; set; } = null;
 
         public Color getPrimaryColor()
         {
@@ -293,6 +293,16 @@ namespace DialogueHelper.Content.UI.Dialogue
             int b = Convert.ToInt16(color.B);
             return new Color(r, g, b);
         }
+    }
+
+    public class Expression
+    {
+        public string Title { get; set; }
+        public string Path { get; set; }
+        public int FrameCount { get; set; } = 1;
+        public int FrameRate { get; set; } = 0;
+        public bool Loop { get; set; } = false;
+        public bool HasAnimateCondition { get; set; } = false;
     }
 
     public class DialogueTree
@@ -318,7 +328,7 @@ namespace DialogueHelper.Content.UI.Dialogue
         public string Title { get; set; }
         public int Heading { get; set; } = -1;
         public string SwapToTreeKey { get; set; } = null;
-        public bool Requirement { get; set; } = true;
+        public bool HasRequirement { get; set; } = false;
         public ItemStack Cost { get; set; } = null;
         public bool DismissSubSpeaker { get; set; } = false;
     }
@@ -326,15 +336,6 @@ namespace DialogueHelper.Content.UI.Dialogue
     {
         public string ModName { get; set; }
         public string FilePath { get; set; }
-    }
-    public class Expression
-    {
-        public string Title { get; set; }
-        public string Path { get; set; }
-        public int FrameCount { get; set; } = 1;
-        public int FrameRate { get; set; } = 0;
-        public bool Loop { get; set; } = false;
-        public bool AnimateCondition { get; set; } = true;
     }
     public class ItemStack
     {
