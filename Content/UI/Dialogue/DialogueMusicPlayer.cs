@@ -13,9 +13,10 @@ namespace DialogueHelper.Content.UI.Dialogue
             DialogueUISystem dialogueUISystem = ModContent.GetInstance<DialogueUISystem>();
             DialogueUIState UI = dialogueUISystem.DialogueUIState;
             Dialogue CurrentDialogue = dialogueUISystem.CurrentTree.Dialogues[UI.DialogueIndex];
-            if (CurrentDialogue.MusicID == -1 || !(!Main.gameMenu && !Main.dedServ))
+            if (CurrentDialogue.Music == null || !(!Main.gameMenu && !Main.dedServ))
                 return;
-            Main.musicBox2 = CurrentDialogue.MusicID;
+            int MusicID = MusicLoader.GetMusicSlot(ModLoader.GetMod(CurrentDialogue.Music.ModName), CurrentDialogue.Music.FilePath);
+            Main.musicBox2 = MusicID;
         }
     }
 }

@@ -310,7 +310,7 @@ namespace DialogueHelper.Content.UI.Dialogue
         public int ExpressionIndex { get; set; } = 0;
         public float TextScale { get; set; } = 1.5f;
         public int TextDelay { get; set; } = 3;
-        public int MusicID { get; set; } = -1;
+        public Music Music { get; set; } = null;
     }
 
     public class Response
@@ -322,7 +322,11 @@ namespace DialogueHelper.Content.UI.Dialogue
         public ItemStack Cost { get; set; } = null;
         public bool DismissSubSpeaker { get; set; } = false;
     }
-
+    public class Music
+    {
+        public string ModName { get; set; }
+        public string FilePath { get; set; }
+    }
     public class Expression
     {
         public string Title { get; set; }
@@ -332,7 +336,6 @@ namespace DialogueHelper.Content.UI.Dialogue
         public bool Loop { get; set; } = false;
         public bool AnimateCondition { get; set; } = true;
     }
-
     public class ItemStack
     {
         public int Type { get; set; }
