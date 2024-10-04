@@ -113,7 +113,7 @@ namespace DialogueHelper.Content.UI.Dialogue
 
             // Fall back to english if not found
             if (!DialogueSource.FileExists(path))
-                path = Path.Combine("Localization/DialogueTrees", "en-US", "rizz.json");
+                path = Path.Combine("Localization/DialogueTrees", "en-US", TreeKey + ".json");
 
             // Throw if we cant find english either
             if (!DialogueSource.FileExists(path))
