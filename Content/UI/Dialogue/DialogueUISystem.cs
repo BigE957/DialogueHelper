@@ -127,11 +127,11 @@ namespace DialogueHelper.Content.UI.Dialogue
             Dialogue currentDialogue = CurrentTree.Dialogues[DialogueIndex];
 
             activeExtension = LanguageManager.Instance.ActiveCulture.Name;
-            path = Path.Combine("Localization/Characters", activeExtension, CurrentTree.Characters[currentDialogue.CharacterID] + ".json");
+            path = Path.Combine("Localization/Characters", activeExtension, CurrentTree.Characters[currentDialogue.CharacterIndex] + ".json");
 
             // Fall back to english if not found
             if (!DialogueSource.FileExists(path))
-                path = Path.Combine("Localization/Characters", "en-US", CurrentTree.Characters[currentDialogue.CharacterID] + ".json");
+                path = Path.Combine("Localization/Characters", "en-US", CurrentTree.Characters[currentDialogue.CharacterIndex] + ".json");
 
             // Throw if we cant find english either
             if (!DialogueSource.FileExists(path))
@@ -158,23 +158,46 @@ namespace DialogueHelper.Content.UI.Dialogue
             DialogueUI?.SetState(DialogueUIState);
         }
 
-        public void UpdateDialogueUI(string TreeKey, int DialogueIndex)
+        public void UpdateDialogueUI(string treeKey, int DialogueIndex)
         {
-            int formerSpeakerIndex = CurrentTree.Dialogues[DialogueUIState.DialogueIndex].CharacterID;
+            string activeExtension;
+            string path;
+            Stream stream;
+            #region Update Tree if new tree
+            if (treeKey != DialogueUIState.TreeKey)
+            {
+                activeExtension = LanguageManager.Instance.ActiveCulture.Name;
+                path = Path.Combine("Localization/DialogueTrees", activeExtension, treeKey + ".json");
+
+                // Fall back to english if not found
+                if (!DialogueSource.FileExists(path))
+                    path = Path.Combine("Localization/DialogueTrees", "en-US", "rizz.json");
+
+                // Throw if we cant find english either
+                if (!DialogueSource.FileExists(path))
+                    throw new FileNotFoundException($"Could not find the dialog file {path}.");
+
+                stream = DialogueSource.GetFileStream(path);
+
+                CurrentTree = JsonSerializer.Deserialize<DialogueTree>(stream);
+
+                stream.Close();
+            }
+            #endregion
             Dialogue currentDialogue = CurrentTree.Dialogues[DialogueIndex];
 
             #region UpcomingSpeaker Assignment
-            string activeExtension = LanguageManager.Instance.ActiveCulture.Name;
-            string path = Path.Combine("Localization/Characters", activeExtension, CurrentTree.Characters[currentDialogue.CharacterID] + ".json");
+            activeExtension = LanguageManager.Instance.ActiveCulture.Name;
+            path = Path.Combine("Localization/Characters", activeExtension, CurrentTree.Characters[currentDialogue.CharacterIndex] + ".json");
 
             // Fall back to english if not found
             if (!DialogueSource.FileExists(path))
-                path = Path.Combine("Localization/Characters", "en-US", CurrentTree.Characters[currentDialogue.CharacterID] + ".json");
+                path = Path.Combine("Localization/Characters", "en-US", CurrentTree.Characters[currentDialogue.CharacterIndex] + ".json");
 
             // Throw if we cant find english either
             if (!DialogueSource.FileExists(path))
                 throw new FileNotFoundException($"Could not find the dialog file {path}.");
-            Stream stream = DialogueSource.GetFileStream(path);
+            stream = DialogueSource.GetFileStream(path);
 
             Character upcomingSpeaker = JsonSerializer.Deserialize<Character>(stream);
 
@@ -219,7 +242,7 @@ namespace DialogueHelper.Content.UI.Dialogue
             DialogueUI = new();
             DialogueUIState = new()
             {
-                TreeKey = TreeKey,
+                TreeKey = treeKey,
                 DialogueIndex = DialogueIndex
             };
 
@@ -276,42 +299,44 @@ namespace DialogueHelper.Content.UI.Dialogue
     {
         public Dialogue[] Dialogues { get; set; }
         public string[] Characters { get; set; }
+        public bool Important { get; set; } = true;
     }
 
     public class Dialogue
     {
         public string Text { get; set; }
-        public Response[] Responses { get; set; }
-        public int CharacterID { get; set; }
-        public int ExpressionIndex { get; set; }
-        public float TextScale { get; set; }
-        public int TextDelay { get; set; }
-        public int MusicID { get; set; }
+        public Response[] Responses { get; set; } = [];
+        public int CharacterIndex { get; set; } = 0;
+        public int ExpressionIndex { get; set; } = 0;
+        public float TextScale { get; set; } = 1.5f;
+        public int TextDelay { get; set; } = 3;
+        public int MusicID { get; set; } = -1;
     }
 
     public class Response
     {
         public string Title { get; set; }
-        public int Heading { get; set; }
-        public bool Requirement { get; set; }
-        public ItemStack Cost { get; set; }
-        public bool DismissSubSpeaker { get; set; }
+        public int Heading { get; set; } = -1;
+        public string SwapToTreeKey { get; set; } = null;
+        public bool Requirement { get; set; } = true;
+        public ItemStack Cost { get; set; } = null;
+        public bool DismissSubSpeaker { get; set; } = false;
     }
 
     public class Expression
     {
         public string Title { get; set; }
         public string Path { get; set; }
-        public int FrameCount { get; set; }
-        public int FrameRate { get; set; }
-        public bool Loop { get; set; }
-        public bool AnimateCondition { get; set; }
+        public int FrameCount { get; set; } = 1;
+        public int FrameRate { get; set; } = 0;
+        public bool Loop { get; set; } = false;
+        public bool AnimateCondition { get; set; } = true;
     }
 
     public class ItemStack
     {
         public int Type { get; set; }
-        public int Stack { get; set; }
+        public int Stack { get; set; } = 1;
     }
     #endregion
 }

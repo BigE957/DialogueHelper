@@ -222,7 +222,7 @@ namespace DialogueHelper.Content.UI.Dialogue
                     style = (BaseDialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style) ?? typeof(DefaultDialogueStyle));
 
                 style.PreUICreate(DialogueIndex);
-                if (CurrentDialogue.CharacterID != -1)
+                if (CurrentDialogue.CharacterIndex != -1)
                 {
                     //Main.NewText("Create Speaker: " + CurrentDialogue.CharacterIndex);
                     CurrentCharacter = ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker;
@@ -515,9 +515,9 @@ namespace DialogueHelper.Content.UI.Dialogue
                     ModContent.GetInstance<DialogueUISystem>().DialogueClose?.Invoke(TreeKey, DialogueIndex, buttonID);
                 }
                 else if (heading == -2 && CurrentTree.Dialogues.Length > DialogueIndex + 1)
-                    ModContent.GetInstance<DialogueUISystem>().UpdateDialogueUI(TreeKey, DialogueIndex + 1);
+                    ModContent.GetInstance<DialogueUISystem>().UpdateDialogueUI(response.SwapToTreeKey ?? TreeKey, DialogueIndex + 1);
                 else
-                    ModContent.GetInstance<DialogueUISystem>().UpdateDialogueUI(TreeKey, heading);
+                    ModContent.GetInstance<DialogueUISystem>().UpdateDialogueUI(response.SwapToTreeKey ?? TreeKey, heading);
             }
         }
         public void SpawnTextBox()
