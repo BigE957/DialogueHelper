@@ -79,7 +79,7 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
             textbox.Append(NameBox);
 
             UIText NameText;
-            if (CurrentDialogue.CharacterID == -1)
+            if (CurrentDialogue.CharacterIndex == -1)
                 NameText = new UIText("...");
             else
             {

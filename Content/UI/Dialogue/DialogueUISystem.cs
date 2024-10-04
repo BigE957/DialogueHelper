@@ -327,10 +327,28 @@ namespace DialogueHelper.Content.UI.Dialogue
     {
         public string Title { get; set; }
         public int Heading { get; set; } = -1;
+        public string TextColor { get; set; } = "#FFFFFF";
+        public string TextBorderColor { get; set; } = "#000000";
         public string SwapToTreeKey { get; set; } = null;
         public bool HasRequirement { get; set; } = false;
         public ItemStack Cost { get; set; } = null;
         public bool DismissSubSpeaker { get; set; } = false;
+        public Color getTextColor()
+        {
+            System.Drawing.Color color = System.Drawing.ColorTranslator.FromHtml(TextColor);
+            int r = Convert.ToInt16(color.R);
+            int g = Convert.ToInt16(color.G);
+            int b = Convert.ToInt16(color.B);
+            return new Color(r, g, b);
+        }
+        public Color getTextBorderColor()
+        {
+            System.Drawing.Color color = System.Drawing.ColorTranslator.FromHtml(TextBorderColor);
+            int r = Convert.ToInt16(color.R);
+            int g = Convert.ToInt16(color.G);
+            int b = Convert.ToInt16(color.B);
+            return new Color(r, g, b);
+        }
     }
     public class Music
     {

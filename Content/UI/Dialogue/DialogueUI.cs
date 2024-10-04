@@ -629,7 +629,11 @@ namespace DialogueHelper.Content.UI.Dialogue
                         Append(button);
 
                         UIText text;
-                        text = new(availableResponses[i].Title, 0f);
+                        text = new(availableResponses[i].Title, 0f)
+                        {
+                            TextColor = availableResponses[i].getTextColor(),
+                            ShadowColor = availableResponses[i].getTextBorderColor()
+                        };
 
                         text.Width.Pixels = style.ButtonSize.X;
                         text.IsWrapped = true;
