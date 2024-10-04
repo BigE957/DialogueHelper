@@ -656,7 +656,7 @@ namespace DialogueHelper.Content.UI.Dialogue
                                 VAlign = 0.5f
                             };
 
-                            Texture2D itemTexture = (Texture2D)ModContent.Request<Texture2D>(ItemLoader.GetItem(cost.Type).Texture);
+                            Texture2D itemTexture = (Texture2D)ModContent.Request<Texture2D>(ItemLoader.GetItem(cost.ItemID).Texture);
                             UIImage itemIcon = new(itemTexture);
                             itemIcon.Width.Pixels = itemTexture.Width;
                             itemIcon.Height.Pixels = itemTexture.Height;
@@ -687,7 +687,10 @@ namespace DialogueHelper.Content.UI.Dialogue
         private static bool CanAffordCost(Player player, ItemStack price)
         {
             int amount = price.Stack;
-            foreach (Item item in player.inventory.Where(i => i.type == price.Type))
+            int itemID = price.ItemID;
+            if (itemID == -1)
+                itemID = price.TypeToID();
+            foreach (Item item in player.inventory.Where(i => i.type == itemID))
             {
                 if (item.stack >= amount)
                 {
@@ -699,7 +702,7 @@ namespace DialogueHelper.Content.UI.Dialogue
             }
             if (amount == 0)
             {
-                foreach (Item item in player.inventory.Where(i => i.type == price.Type))
+                foreach (Item item in player.inventory.Where(i => i.type == itemID))
                 {
                     amount = price.Stack;
                     if (item.stack >= amount)

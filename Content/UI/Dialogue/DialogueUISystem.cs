@@ -9,6 +9,7 @@ using System;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria;
+using Steamworks;
 
 namespace DialogueHelper.Content.UI.Dialogue
 {
@@ -333,6 +334,7 @@ namespace DialogueHelper.Content.UI.Dialogue
         public bool HasRequirement { get; set; } = false;
         public ItemStack Cost { get; set; } = null;
         public bool DismissSubSpeaker { get; set; } = false;
+        
         public Color getTextColor()
         {
             System.Drawing.Color color = System.Drawing.ColorTranslator.FromHtml(TextColor);
@@ -357,8 +359,19 @@ namespace DialogueHelper.Content.UI.Dialogue
     }
     public class ItemStack
     {
-        public int Type { get; set; }
+        public string TypePath { get; set; } = null;
+        public int ItemID { get; set; } = -1;
         public int Stack { get; set; } = 1;
+
+        public int TypeToID()
+        {
+            Type itemType = Type.GetType(TypePath);
+            var possibleItem = Activator.CreateInstance(itemType);
+            if (possibleItem.GetType() != typeof(ModItem))
+                return -1;
+            ModItem item = (ModItem)possibleItem;
+            return item.Type;
+        }
     }
     #endregion
 }
