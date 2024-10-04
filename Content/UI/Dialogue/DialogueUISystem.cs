@@ -1,5 +1,4 @@
 ﻿using DialogueHelper.Content.UI.Dialogue.DialogueStyles;
-using DialogueHelper.Content.UI.Dialogue;
 using System.Text.Json;
 using Terraria.UI;
 using System.IO;
@@ -9,7 +8,6 @@ using System;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria;
-using Steamworks;
 
 namespace DialogueHelper.Content.UI.Dialogue
 {
@@ -270,7 +268,7 @@ namespace DialogueHelper.Content.UI.Dialogue
     /// </returns>
     public class Character
     {
-        public string Name { get; set; }        
+        public string Name { get; set; }
         public Expression[] Expressions { get; set; }
         public float Scale { get; set; } = 1f;
         public string Style { get; set; } = "DialogueHelper.Content.UI.Dialogue.DialogueStyles.DefaultDialogueStyle";
@@ -334,7 +332,7 @@ namespace DialogueHelper.Content.UI.Dialogue
         public bool HasRequirement { get; set; } = false;
         public ItemStack Cost { get; set; } = null;
         public bool DismissSubSpeaker { get; set; } = false;
-        
+
         public Color getTextColor()
         {
             System.Drawing.Color color = System.Drawing.ColorTranslator.FromHtml(TextColor);
@@ -359,19 +357,18 @@ namespace DialogueHelper.Content.UI.Dialogue
     }
     public class ItemStack
     {
-        public string TypePath { get; set; } = null;
         public int ItemID { get; set; } = -1;
+        public string SourceMod { get; set; } = null;
+        public string ItemName { get; set; } = null;
         public int Stack { get; set; } = 1;
 
-        public int TypeToID()
+        public int FetchItemID()
         {
-            Type itemType = Type.GetType(TypePath);
-            if (itemType == null)
+            if (ItemID != -1)
+                return ItemID;
+            Mod mod = ModLoader.GetMod(SourceMod);
+            if (!mod.TryFind<ModItem>(ItemName, out ModItem item))
                 return -1;
-            var possibleItem = Activator.CreateInstance(itemType);
-            if (possibleItem.GetType() != typeof(ModItem))
-                return -1;
-            ModItem item = (ModItem)possibleItem;
             return item.Type;
         }
     }

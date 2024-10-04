@@ -15,7 +15,6 @@ using Terraria.Localization;
 
 namespace DialogueHelper.Content.UI.Dialogue
 {
-
     public class DialogueUIState : UIState
     {
         public class DialogueText : UIElement
@@ -308,12 +307,13 @@ namespace DialogueHelper.Content.UI.Dialogue
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            //Main.NewText(Main.screenWidth);
 
             DialogueTree CurrentTree = ModContent.GetInstance<DialogueUISystem>().CurrentTree;
             Dialogue CurrentDialogue = CurrentTree.Dialogues[DialogueIndex];
             Character CurrentCharacter = ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker;
             Character FormerCharacter = ModContent.GetInstance<DialogueUISystem>().SubSpeaker;
+
+            //Main.NewText(CurrentDialogue.Responses[1].Cost.TypePath);
 
             BaseDialogueStyle style;
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
@@ -480,7 +480,7 @@ namespace DialogueHelper.Content.UI.Dialogue
             DialogueText dialogue = (DialogueText)Textbox.Children.Where(c => c.GetType() == typeof(DialogueText)).First();
             DialogueTree CurrentTree = ModContent.GetInstance<DialogueUISystem>().CurrentTree;
             Dialogue CurrentDialogue = CurrentTree.Dialogues[DialogueIndex];
-            if (CurrentDialogue.Responses == null && !dialogue.crawling)
+            if (CurrentDialogue.Responses.Length == 0 && !dialogue.crawling)
             {
                 ModContent.GetInstance<DialogueUISystem>().ButtonClick?.Invoke(TreeKey, DialogueIndex, 0);
 
@@ -595,14 +595,13 @@ namespace DialogueHelper.Content.UI.Dialogue
 
                 if (CurrentDialogue.Responses != null)
                 {
-                    Response[] availableResponses = [];
-                    for(int i = 0; i < CurrentDialogue.Responses.Length; i++)
+                    List<Response> availableResponses = [];
+                    for (int i = 0; i < CurrentDialogue.Responses.Length; i++)
                     {
                         if (!CurrentDialogue.Responses[i].HasRequirement || ResponseRequirementCheck.Invoke(TreeKey, DialogueIndex, i))
-                            availableResponses.Append(CurrentDialogue.Responses[i]);
+                            availableResponses.Add(CurrentDialogue.Responses[i]);
                     }
-                    int responseCount = availableResponses.Length;
-
+                    int responseCount = availableResponses.Count;
                     for (int i = 0; i < responseCount; i++)
                     {
                         UIPanel button = new();
@@ -642,7 +641,7 @@ namespace DialogueHelper.Content.UI.Dialogue
                         button.Append(text);
                         if (availableResponses[i].Cost != null)
                         {
-                            ItemStack cost = (ItemStack)availableResponses[i].Cost;
+                            ItemStack cost = availableResponses[i].Cost;
                             UIPanel costHolder = new()
                             {
                                 BorderColor = Color.Transparent,
@@ -656,7 +655,17 @@ namespace DialogueHelper.Content.UI.Dialogue
                                 VAlign = 0.5f
                             };
 
-                            Texture2D itemTexture = (Texture2D)ModContent.Request<Texture2D>(ItemLoader.GetItem(cost.ItemID).Texture);
+                            int itemID = cost.ItemID;
+                            if (itemID == -1)
+                                itemID = cost.FetchItemID();
+                            if (itemID == -1) //If the ItemType is unable to be found, then break.
+                            {
+                                costHolder = null;
+                                stackText = null;
+                                continue;
+                            }
+
+                            Texture2D itemTexture = (Texture2D)ModContent.Request<Texture2D>(ItemLoader.GetItem(itemID).Texture);
                             UIImage itemIcon = new(itemTexture);
                             itemIcon.Width.Pixels = itemTexture.Width;
                             itemIcon.Height.Pixels = itemTexture.Height;
@@ -664,6 +673,9 @@ namespace DialogueHelper.Content.UI.Dialogue
 
                             itemIcon.Top.Pixels -= itemIcon.Height.Pixels / 2;
                             itemIcon.Left.Pixels -= itemIcon.Width.Pixels / 2;
+
+                            itemIcon.Left.Pixels -= (itemIcon.Width.Pixels * itemIcon.ImageScale) / 2;
+                            stackText.Left.Pixels += (itemIcon.Width.Pixels * itemIcon.ImageScale) / 2;
 
                             costHolder.Height.Pixels = 18f > stackText.Height.Pixels ? 24f : stackText.Height.Pixels;
                             costHolder.Width.Pixels = itemIcon.Width.Pixels * itemIcon.ImageScale + 15 * stackText.Text.Length;
@@ -689,7 +701,7 @@ namespace DialogueHelper.Content.UI.Dialogue
             int amount = price.Stack;
             int itemID = price.ItemID;
             if (itemID == -1)
-                itemID = price.TypeToID();
+                itemID = price.FetchItemID();
             if (itemID == -1) //If the ItemType is unable to be found, then returns false; as the player can't pay with something that doesn't exist :P
                 return false;
             foreach (Item item in player.inventory.Where(i => i.type == itemID))
