@@ -7,7 +7,6 @@ using System;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria;
-using Steamworks;
 using DialogueHelper.UI.Dialogue.DialogueStyles;
 
 namespace DialogueHelper.UI.Dialogue
@@ -272,7 +271,7 @@ namespace DialogueHelper.UI.Dialogue
         public string Name { get; set; }
         public Expression[] Expressions { get; set; }
         public float Scale { get; set; } = 1f;
-        public string Style { get; set; } = "DialogueHelper.Content.UI.Dialogue.DialogueStyles.DefaultDialogueStyle";
+        public string Style { get; set; } = "DialogueHelper.UI.Dialogue.DialogueStyles.DefaultDialogueStyle";
         public int TextDelay { get; set; } = 3;
         public string PrimaryColor { get; set; } = null;
         public string SecondaryColor { get; set; } = null;

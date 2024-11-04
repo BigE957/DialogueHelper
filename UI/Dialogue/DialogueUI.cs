@@ -10,8 +10,6 @@ using ReLogic.Content;
 using Terraria.GameContent;
 using System.Collections.Generic;
 using System.Linq;
-using Terraria.Localization;
-using DialogueHelper.UI;
 using DialogueHelper.UI.Dialogue.DialogueStyles;
 
 namespace DialogueHelper.UI.Dialogue
