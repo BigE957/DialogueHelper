@@ -1,7 +1,7 @@
 ﻿using Terraria.ModLoader;
 using Terraria;
 
-namespace DialogueHelper.Content.UI.Dialogue
+namespace DialogueHelper.UI.Dialogue
 {
     public class DialogueMusicPlayer : ModPlayer
     {

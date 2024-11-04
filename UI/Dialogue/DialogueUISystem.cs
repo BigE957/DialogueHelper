@@ -1,6 +1,4 @@
-﻿using DialogueHelper.Content.UI.Dialogue.DialogueStyles;
-using DialogueHelper.Content.UI.Dialogue;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Terraria.UI;
 using System.IO;
 using Microsoft.Xna.Framework;
@@ -10,8 +8,9 @@ using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria;
 using Steamworks;
+using DialogueHelper.UI.Dialogue.DialogueStyles;
 
-namespace DialogueHelper.Content.UI.Dialogue
+namespace DialogueHelper.UI.Dialogue
 {
     public delegate void DialogueNotifier(string treeKey, int dialogueID, int buttonID);
 
@@ -231,7 +230,7 @@ namespace DialogueHelper.Content.UI.Dialogue
                 newSpeaker = false;
                 newSubSpeaker = true;
                 returningSpeaker = true;
-                Character temp = (Character)SubSpeaker;
+                Character temp = SubSpeaker;
                 SubSpeaker = CurrentSpeaker;
                 CurrentSpeaker = temp;
                 speakerRight = !speakerRight;
@@ -369,7 +368,7 @@ namespace DialogueHelper.Content.UI.Dialogue
             if (ItemID != -1)
                 return ItemID;
             Mod mod = ModLoader.GetMod(SourceMod);
-            if (!mod.TryFind<ModItem>(ItemName, out ModItem item))
+            if (!mod.TryFind(ItemName, out ModItem item))
                 return -1;
             return item.Type;
         }

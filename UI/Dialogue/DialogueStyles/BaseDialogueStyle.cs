@@ -1,8 +1,9 @@
-﻿using Microsoft.Xna.Framework;
+﻿using DialogueHelper.UI;
+using Microsoft.Xna.Framework;
 using Terraria.GameContent.UI.Elements;
-using static DialogueHelper.Content.UI.Dialogue.DialogueUIState;
+using static DialogueHelper.UI.Dialogue.DialogueUIState;
 
-namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
+namespace DialogueHelper.UI.Dialogue.DialogueStyles
 {
     public class BaseDialogueStyle
     {

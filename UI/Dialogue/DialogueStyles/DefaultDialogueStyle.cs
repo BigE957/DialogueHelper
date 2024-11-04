@@ -1,4 +1,4 @@
-﻿using static DialogueHelper.Content.UI.Dialogue.DialogueUIState;
+﻿using static DialogueHelper.UI.Dialogue.DialogueUIState;
 using Terraria.GameContent.UI.Elements;
 using Terraria.UI;
 using Terraria.ModLoader.UI;
@@ -6,8 +6,10 @@ using Terraria;
 using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
 using System.Linq;
+using DialogueHelper.UI;
+using DialogueHelper.UI.Dialogue;
 
-namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
+namespace DialogueHelper.UI.Dialogue.DialogueStyles
 {
     public class DefaultDialogueStyle : BaseDialogueStyle
     {
@@ -193,7 +195,7 @@ namespace DialogueHelper.Content.UI.Dialogue.DialogueStyles
                     }
                     else if (button.Children.Count() > 1)
                     {
-                        UIElement child = (UIElement)button.Children.Where(c => c.GetType() == typeof(UIPanel)).First();
+                        UIElement child = button.Children.Where(c => c.GetType() == typeof(UIPanel)).First();
                         child.Top.Pixels = child.Parent.Height.Pixels / 4;
                     }
                 }
