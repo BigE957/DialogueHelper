@@ -2,16 +2,14 @@
 using Terraria;
 using Terraria.GameContent.UI.Elements;
 
-namespace DialogueHelper.UI
+namespace DialogueHelper.UI;
+public class MouseBlockingUIPanel : UIPanel
 {
-    public class MouseBlockingUIPanel : UIPanel
+    public override void Update(GameTime gameTime)
     {
-        public override void Update(GameTime gameTime)
-        {
-            base.Update(gameTime);
+        base.Update(gameTime);
 
-            if (ContainsPoint(Main.MouseScreen))
-                Main.LocalPlayer.mouseInterface = true;
-        }
+        if (ContainsPoint(Main.MouseScreen))
+            Main.LocalPlayer.mouseInterface = true;
     }
 }
