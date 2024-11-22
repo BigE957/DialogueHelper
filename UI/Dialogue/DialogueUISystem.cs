@@ -266,7 +266,17 @@ public class DialogueUISystem : ModSystem
 public class Character
 {
     public string Name { get; set; }
-    public Expression[] Expressions { get; set; } = null;
+    public Expression[] Expressions { get; set; } =
+    {
+        new Expression(){
+            Title = "None",
+            Path = "DialogueHelper/UI/Dialogue/CharacterAssets/Nothing",
+            FrameCount = 1,
+            FrameRate = 0,
+            Loop = false,
+            HasAnimateCondition = false,
+        }
+    };
     public float Scale { get; set; } = 1f;
     public string Style { get; set; } = "DialogueHelper.UI.Dialogue.DialogueStyles.DefaultDialogueStyle";
     public int TextDelay { get; set; } = 3;
