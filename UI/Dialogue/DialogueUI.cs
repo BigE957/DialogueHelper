@@ -176,9 +176,6 @@ public class DialogueUIState : UIState
     public FlippableUIImage Speaker;
     public FlippableUIImage SubSpeaker;
 
-    public delegate bool DialogueNotifier(string treeKey, int dialogueID, int buttonID);
-    public DialogueNotifier ResponseRequirementCheck;
-
     public delegate bool CharacterNotifier(string characterName, string expressionName);
     public CharacterNotifier AnimationConditionCheck;
 
@@ -593,7 +590,7 @@ public class DialogueUIState : UIState
                 List<Response> availableResponses = [];
                 for (int i = 0; i < CurrentDialogue.Responses.Length; i++)
                 {
-                    if (!CurrentDialogue.Responses[i].HasRequirement || ResponseRequirementCheck.Invoke(TreeKey, DialogueIndex, i))
+                    if (CurrentDialogue.Responses[i].Requirement)
                         availableResponses.Add(CurrentDialogue.Responses[i]);
                 }
                 int responseCount = availableResponses.Count;

@@ -255,7 +255,6 @@ public class DialogueUISystem : ModSystem
 }
 
 #region Structures
-/// <param name="ID">The identifier for this Character, commonly their name. This is used primarilly to locate this character's Expression Assets within the Character Assets folder.</param>
 /// <param name="expressions">An array of identifiers, smililar to a Character's <see cref="ID"/>, used to find individual Expression Assets within the Character Assets Folder.</param>
 /// <param name="name">The actual name of the character, used by the Textbox. Can include spaces and other formatting, unlike the <see cref="ID"/>. Will default to the Character's <see cref="ID"/> if not set.</param>
 /// <param name="scale">Determines the scale the character portrait will be drawn at by the Dialogue System. Defaults to <see cref="2f"/>.</param>
@@ -267,7 +266,7 @@ public class DialogueUISystem : ModSystem
 public class Character
 {
     public string Name { get; set; }
-    public Expression[] Expressions { get; set; }
+    public Expression[] Expressions { get; set; } = null;
     public float Scale { get; set; } = 1f;
     public string Style { get; set; } = "DialogueHelper.UI.Dialogue.DialogueStyles.DefaultDialogueStyle";
     public int TextDelay { get; set; } = 3;
@@ -327,7 +326,7 @@ public class Response
     public string TextColor { get; set; } = "#FFFFFF";
     public string TextBorderColor { get; set; } = "#000000";
     public string SwapToTreeKey { get; set; } = null;
-    public bool HasRequirement { get; set; } = false;
+    public bool Requirement { get; set; } = true;
     public ItemStack Cost { get; set; } = null;
     public bool DismissSubSpeaker { get; set; } = false;
 
