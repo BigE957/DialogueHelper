@@ -8,6 +8,7 @@ using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria;
 using DialogueHelper.UI.Dialogue.DialogueStyles;
+using DialogueHelper.UI.Dialogue.Emoticons;
 
 namespace DialogueHelper.UI.Dialogue;
 
@@ -309,6 +310,7 @@ public class Expression
     public int FrameRate { get; set; } = 0;
     public bool Loop { get; set; } = false;
     public bool HasAnimateCondition { get; set; } = false;
+    public Rectangle HeadArea { get; set; } = Rectangle.Empty;
 }
 
 public class DialogueTree
@@ -327,6 +329,7 @@ public class Dialogue
     public float TextScale { get; set; } = 1.5f;
     public int TextDelay { get; set; } = -1;
     public Music Music { get; set; } = null;
+    public string Emoticon { get; set; } = null;
 }
 
 public class Response

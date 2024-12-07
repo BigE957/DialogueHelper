@@ -9,6 +9,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 	  <None Remove="icon.png" />
+	  <None Remove="UI\Dialogue\Emoticons\ConfusedIcon.png" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="UI\Dialogue\CharacterAssets\Blabbirious\" />

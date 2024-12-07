@@ -11,6 +11,7 @@ using Terraria.GameContent;
 using System.Collections.Generic;
 using System.Linq;
 using DialogueHelper.UI.Dialogue.DialogueStyles;
+using DialogueHelper.UI.Dialogue.Emoticons;
 
 namespace DialogueHelper.UI.Dialogue;
 
@@ -42,7 +43,7 @@ public class DialogueUIState : UIState
             List<TextSnippet> printedSnippets = [];
             if (textIndex < Text.Length)
             {
-                if (++counter % (Text[textIndex] == '.' || Text[textIndex] == ';' ? textDelay * 3 : Text[textIndex] == ',' ? textDelay * 2 : textDelay) == 0 && counter >= 0)
+                if (++counter % (Text[textIndex] == '.' || Text[textIndex] == '?' || Text[textIndex] == '!' || Text[textIndex] == ';' || Text[textIndex] == ':' ? textDelay * 10 : Text[textIndex] == ',' ? textDelay * 5 : textDelay) == 0 && counter >= 0)
                 {
                     textIndex++;
                     counter = 0;
@@ -260,6 +261,14 @@ public class DialogueUIState : UIState
                 style.PreSpeakerCreate(DialogueIndex, Speaker);
                 Append(Speaker);
                 style.PostSpeakerCreate(DialogueIndex, Speaker);
+
+                if (CurrentDialogue.Emoticon != null)
+                {
+                    BaseEmoticon emoticon = (BaseEmoticon)Activator.CreateInstance(Type.GetType(CurrentDialogue.Emoticon));
+                    Rectangle area = emoticon.SpeakerHeadArea = CurrentCharacter.Expressions[CurrentDialogue.ExpressionIndex].HeadArea;
+                    SetRectangle(emoticon, area.Center().X, area.Center().Y, 1, 1);
+                    Speaker.Append(emoticon);
+                }
             }
             if (FormerCharacter != null)
             {
