@@ -23,6 +23,6 @@ namespace DialogueHelper.UI.Dialogue.Emoticons
             Counter++;
         }
 
-        public virtual Vector2 OffsetPosition() => Vector2.Zero
+        public virtual Vector2 OffsetPosition() => Vector2.Zero;
     }
 }
