@@ -265,7 +265,7 @@ public class DialogueUIState : UIState
                 if (CurrentDialogue.Emoticon != null)
                 {
                     BaseEmoticon emoticon = (BaseEmoticon)Activator.CreateInstance(Type.GetType(CurrentDialogue.Emoticon));
-                    Rectangle area = emoticon.SpeakerHeadArea = CurrentCharacter.Expressions[CurrentDialogue.ExpressionIndex].HeadArea;
+                    Rectangle area = emoticon.SpeakerHeadArea = CurrentCharacter.Expressions[CurrentDialogue.ExpressionIndex].HeadArea.GetRectangle();
                     SetRectangle(emoticon, area.Center().X, area.Center().Y, 1, 1);
                     Speaker.Append(emoticon);
                 }

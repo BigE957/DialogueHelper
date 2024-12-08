@@ -310,7 +310,7 @@ public class Expression
     public int FrameRate { get; set; } = 0;
     public bool Loop { get; set; } = false;
     public bool HasAnimateCondition { get; set; } = false;
-    public Rectangle HeadArea { get; set; } = Rectangle.Empty;
+    public ClassRectangle HeadArea { get; set; } = ClassRectangle.Empty;
 }
 
 public class DialogueTree
@@ -360,11 +360,13 @@ public class Response
         return new Color(r, g, b);
     }
 }
+
 public class Music
 {
     public string ModName { get; set; }
     public string FilePath { get; set; }
 }
+
 public class ItemStack
 {
     public int ItemID { get; set; } = -1;
@@ -381,5 +383,16 @@ public class ItemStack
             return -1;
         return item.Type;
     }
+}
+
+public class ClassRectangle
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public Rectangle GetRectangle() => new(X, Y, Width, Height);
+
+    public static readonly ClassRectangle Empty = new() { X = 0, Y = 0, Width = 0, Height = 0 };
 }
 #endregion
