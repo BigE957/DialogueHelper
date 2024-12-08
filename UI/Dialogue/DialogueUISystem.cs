@@ -28,6 +28,10 @@ public class DialogueUISystem : ModSystem
 
     public Character SubSpeaker = null;
 
+    public int CurrentDialogueIndex = -1;
+
+    public int FormerDialogueIndex = -1;
+
     public DialogueNotifier ButtonClick;
 
     public DialogueNotifier DialogueOpen;
@@ -95,6 +99,8 @@ public class DialogueUISystem : ModSystem
 
     public void DisplayDialogueTree(Mod mod, string TreeKey, int DialogueIndex = 0)
     {
+        CurrentDialogueIndex = DialogueIndex;
+
         isDialogueOpen = true;
         justOpened = true;
         speakerRight = true;
@@ -160,6 +166,9 @@ public class DialogueUISystem : ModSystem
 
     public void UpdateDialogueUI(string treeKey, int DialogueIndex)
     {
+        FormerDialogueIndex = CurrentDialogueIndex;
+        CurrentDialogueIndex = DialogueIndex;
+
         string activeExtension;
         string path;
         Stream stream;

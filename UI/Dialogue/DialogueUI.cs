@@ -262,9 +262,14 @@ public class DialogueUIState : UIState
                 Append(Speaker);
                 style.PostSpeakerCreate(DialogueIndex, Speaker);
 
-                if (CurrentDialogue.Emoticon != null)
+                if (CurrentDialogue.Emoticon != null || CurrentTree.Dialogues[ModContent.GetInstance<DialogueUISystem>().FormerDialogueIndex].Emoticon != null)
                 {
                     BaseEmoticon emoticon = (BaseEmoticon)Activator.CreateInstance(Type.GetType(CurrentDialogue.Emoticon));
+                    if (CurrentDialogue.Emoticon == null)
+                    {
+                        emoticon.Fading = true;
+                        emoticon.Counter = emoticon.TimeToAppear;
+                    }
                     Rectangle area = emoticon.SpeakerHeadArea = CurrentCharacter.Expressions[CurrentDialogue.ExpressionIndex].HeadArea.GetRectangle();
                     SetRectangle(emoticon, area.Center().X, area.Center().Y, 1, 1);
                     Speaker.Append(emoticon);

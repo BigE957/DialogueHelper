@@ -11,6 +11,7 @@ namespace DialogueHelper.UI.Dialogue.Emoticons
         public int FrameNum = 0;
         public float ImageScale = 1f;
         public float Opacity = 1f;
+        internal bool Fading = false;
         public float Rotation;
         public Color Color = Color.White;
         public SpriteEffects spriteEffects;
@@ -20,8 +21,16 @@ namespace DialogueHelper.UI.Dialogue.Emoticons
         {
             base.Update(gameTime);
 
-            Counter++;
+            if (Fading)
+            {
+                if(--Counter < 0)
+                    Remove();
+            }
+            else
+                Counter++;
         }
+
+        public virtual int TimeToAppear => 0;
 
         public virtual Vector2 OffsetPosition() => Vector2.Zero;
     }
