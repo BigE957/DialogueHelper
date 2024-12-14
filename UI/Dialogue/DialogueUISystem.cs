@@ -8,7 +8,8 @@ using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria;
 using DialogueHelper.UI.Dialogue.DialogueStyles;
-using DialogueHelper.UI.Dialogue.Emoticons;
+using DialogueHelper.UI.Dialogue.TextEffects;
+using System.Linq;
 
 namespace DialogueHelper.UI.Dialogue;
 
@@ -266,7 +267,7 @@ public class DialogueUISystem : ModSystem
 
 #region Structures
 /// <param name="expressions">An array of identifiers, smililar to a Character's <see cref="ID"/>, used to find individual Expression Assets within the Character Assets Folder.</param>
-/// <param name="name">The actual name of the character, used by the Textbox. Can include spaces and other formatting, unlike the <see cref="ID"/>. Will default to the Character's <see cref="ID"/> if not set.</param>
+/// <param name="Name">The actual name of the character, used by the Textbox. Can include spaces and other formatting, unlike the <see cref="ID"/>. Will default to the Character's <see cref="ID"/> if not set.</param>
 /// <param name="scale">Determines the scale the character portrait will be drawn at by the Dialogue System. Defaults to <see cref="2f"/>.</param>
 /// <param name="style">The Dialogue Style, in the form of a <see cref="Type"/>, associated with this Character. Defaults to <see cref="null"/>, meaning it will use the <see cref="DefaultDialogueStyle"/>.</param>
 /// <param name="textDelay">The Text Delay associated with this character. Affects how long between characters appearing in the Textbox. Defaults to <see cref="3"/>.</param>
@@ -331,7 +332,7 @@ public class DialogueTree
 
 public class Dialogue
 {
-    public string Text { get; set; }
+    public DialogueString[] DialogueText { get; set; }
     public Response[] Responses { get; set; } = [];
     public int CharacterIndex { get; set; } = 0;
     public int ExpressionIndex { get; set; } = 0;
@@ -339,6 +340,24 @@ public class Dialogue
     public int TextDelay { get; set; } = -1;
     public Music Music { get; set; } = null;
     public string Emoticon { get; set; } = null;
+
+    public string GetFullText()
+    {
+        string text = "";
+        for (int i = 0; i < DialogueText.Length; i++)
+            text += DialogueText[i].Text;
+        return text;
+    }
+}
+
+public class DialogueString
+{
+    public string Text { get; set; }
+    public Color Color { get; set; } = Color.White;
+    public float Opacity { get; set; } = 1f;
+    public Vector2 Scale { get; set; } = Vector2.One;
+    public string TextEffect { get; set; } = null;
+    public bool Rainbow { get; set; } = false;
 }
 
 public class Response
