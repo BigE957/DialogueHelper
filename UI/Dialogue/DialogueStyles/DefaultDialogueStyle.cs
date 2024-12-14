@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace DialogueHelper.UI.Dialogue.DialogueStyles;
 
-public class DefaultDialogueStyle : BaseDialogueStyle
+public class DefaultDialogueStyle : DialogueStyle
 {
     public override Vector2 ButtonSize => new(150, 50);
     public override void OnTextboxCreate(UIPanel textbox, FlippableUIImage speaker, FlippableUIImage subSpeaker)

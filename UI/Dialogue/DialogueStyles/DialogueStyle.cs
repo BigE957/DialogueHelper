@@ -5,7 +5,7 @@ using static DialogueHelper.UI.Dialogue.DialogueUIState;
 
 namespace DialogueHelper.UI.Dialogue.DialogueStyles;
 
-public class BaseDialogueStyle
+public class DialogueStyle
 {
     public virtual Vector2 ButtonSize => new(100, 50);
     public virtual Color? ButtonColor => null;
