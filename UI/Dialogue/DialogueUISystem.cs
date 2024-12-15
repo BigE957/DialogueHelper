@@ -290,7 +290,7 @@ public class Character
     };
     public float Scale { get; set; } = 1f;
     public string Style { get; set; } = "DialogueHelper.UI.Dialogue.DialogueStyles.DefaultDialogueStyle";
-    public int TextDelay { get; set; } = 3;
+    public int TextDelay { get; set; } = -1;
     public string PrimaryColor { get; set; } = null;
     public string SecondaryColor { get; set; } = null;
 
@@ -336,8 +336,6 @@ public class Dialogue
     public Response[] Responses { get; set; } = [];
     public int CharacterIndex { get; set; } = 0;
     public int ExpressionIndex { get; set; } = 0;
-    public float TextScale { get; set; } = 1.5f;
-    public int TextDelay { get; set; } = -1;
     public Music Music { get; set; } = null;
     public string Emoticon { get; set; } = null;
 
@@ -353,11 +351,22 @@ public class Dialogue
 public class DialogueString
 {
     public string Text { get; set; }
-    public Color Color { get; set; } = Color.White;
+    public string Color { get; set; } = "#FFFFFF";
     public float Opacity { get; set; } = 1f;
-    public Vector2 Scale { get; set; } = Vector2.One;
+    public Vector2 Scale { get; set; } = Vector2.One * 1.5f;
+    public int TextDelay { get; set; } = -1;
+    public int EndPause { get; set; } = 0;
     public string TextEffect { get; set; } = null;
     public bool Rainbow { get; set; } = false;
+
+    public Color GetTextColor()
+    {
+        System.Drawing.Color color = System.Drawing.ColorTranslator.FromHtml(Color);
+        int r = Convert.ToInt16(color.R);
+        int g = Convert.ToInt16(color.G);
+        int b = Convert.ToInt16(color.B);
+        return new Color(r, g, b);
+    }
 }
 
 public class Response

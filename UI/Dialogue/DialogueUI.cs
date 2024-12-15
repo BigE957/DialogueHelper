@@ -15,20 +15,29 @@ using Terraria.GameContent;
 using static ReLogic.Graphics.DynamicSpriteFont;
 using ReLogic.Graphics;
 using DialogueHelper.UI.Dialogue.TextEffects;
+using CalamityMod.NPCs.SunkenSea;
 
 namespace DialogueHelper.UI.Dialogue;
 
 public class DialogueUIState : UIState
 {
-    public class DialogueText : UIElement
+    public class DialogueText(DialogueString[] dialogue) : UIElement
     {
-        public DialogueString[] Dialogue;
+        public static readonly char[] Punctuation =
+        [
+            '.',
+            '?',
+            '!',
+            ';',
+            ':'
+        ];
+
+        public DialogueString[] Dialogue = dialogue;
         public Vector2[] CharPositions;
-        public float[] CharStartTimes;
+        public float[] CharUpTimes;
 
         public bool crawling = true;
         internal float boxWidth = 0f;
-        internal int textDelay = 10;
         internal Vector2 textScale = new(1.5f, 1.5f);
         internal int textIndex = 0;
         private int counter = -30;
@@ -40,48 +49,78 @@ public class DialogueUIState : UIState
                 Text += Dialogue[i].Text;
 
             CharPositions = new Vector2[Text.Length];
-            CharStartTimes = new float[Text.Length];
-
-            CalculatedStyle innerDimensions = GetInnerDimensions();
-            float xPageTop = innerDimensions.X;
-            float yPageTop = innerDimensions.Y;
+            CharUpTimes = new float[Text.Length];
 
             int DialogueStringIndex = 0;
             int subIndex = 0;
             Vector2 zero = Vector2.Zero;
-            Vector2 one = Vector2.One;
             bool newLine = true;
 
             for (int i = 0; i < Text.Length; i++)
             {
-                #region Dialogue Parsing
                 DialogueString myDialogue = Dialogue[DialogueStringIndex];
                 string myText = myDialogue.Text;
-                char c = myText[subIndex];
 
+                #region Dialogue Parsing
                 if (subIndex >= myText.Length)
                 {
                     subIndex = 0;
                     DialogueStringIndex++;
+
+                    myDialogue = Dialogue[DialogueStringIndex];
+                    myText = myDialogue.Text;
                 }
                 #endregion
 
-                DynamicSpriteFont font = FontAssets.MouseText.Value;
+                char c = myText[subIndex];
+
+                DynamicSpriteFont font = FontAssets.ItemStack.Value;
 
                 #region Line Breaking
                 switch (c)
                 {
                     case '\n':
                         zero.X = 0;
-                        zero.Y += font.LineSpacing * myDialogue.Scale.Y * one.Y;
+                        zero.Y += font.LineSpacing * myDialogue.Scale.Y;
                         newLine = true;
                         continue;
                     case '\r':
                         continue;
                 }
+                if (subIndex != 0 && c != ' ' && myText[subIndex - 1] == ' ')
+                {
+                    int wordIndex = 0;
+                    float carry = 0;
+                    do
+                    {
+                        char myChar = myText[wordIndex + subIndex];
+
+                        SpriteCharacterData charDara = font.SpriteCharacters[myChar];
+                        Vector3 charKerning = charDara.Kerning;
+                        Rectangle charPadding = charDara.Padding;
+
+                        carry += font.CharacterSpacing * myDialogue.Scale.X;
+                        carry += charKerning.X * myDialogue.Scale.X;
+                        if (CharPositions[i - 1].X + (carry + (charPadding.X * myDialogue.Scale.X)) > Parent.Width.Pixels - 48)
+                        {
+                            newLine = true;
+                            break;
+                        }
+                        carry += (charKerning.Y + charKerning.Z) * myDialogue.Scale.X;
+
+                        wordIndex++;
+                    }
+                    while (wordIndex + subIndex < myText.Length && (myText[wordIndex + subIndex] != ' ' || Punctuation.Contains(myText[wordIndex + subIndex])));
+
+                    if (newLine)
+                    {
+                        zero.X = 0;
+                        zero.Y += font.LineSpacing * myDialogue.Scale.Y;
+                    }
+                }
                 #endregion
 
-                #region Drawing
+                #region Positioning
                 SpriteCharacterData characterData = font.SpriteCharacters[c];
                 Vector3 kerning = characterData.Kerning;
                 Rectangle padding = characterData.Padding;
@@ -89,17 +128,16 @@ public class DialogueUIState : UIState
                 if (newLine)
                     kerning.X = Math.Max(kerning.X, 0f);
                 else
-                    zero.X += font.CharacterSpacing * myDialogue.Scale.X * one.X;
+                    zero.X += font.CharacterSpacing * myDialogue.Scale.X;
 
-                zero.X += kerning.X * myDialogue.Scale.X * one.X;
+                zero.X += kerning.X * myDialogue.Scale.X;
                 Vector2 position = zero;
                 position.X += padding.X * myDialogue.Scale.X;
                 position.Y += padding.Y * myDialogue.Scale.Y;
-                position += new Vector2(xPageTop, yPageTop);
 
                 CharPositions[i] = position;
 
-                zero.X += (kerning.Y + kerning.Z) * myDialogue.Scale.X * one.X;
+                zero.X += (kerning.Y + kerning.Z) * myDialogue.Scale.X;
                 newLine = false;
                 #endregion
 
@@ -111,81 +149,133 @@ public class DialogueUIState : UIState
         {
             base.Update(gameTime);
 
+            int dialogueIndex = 0;
+            int count = textIndex;
+            while (count > Dialogue[dialogueIndex].Text.Length)
+            {
+                count -= Dialogue[dialogueIndex].Text.Length;
+                dialogueIndex++;
+            }
+
+            int textDelay = 2;
+            if (Dialogue[dialogueIndex].TextDelay > 0)
+                textDelay = Dialogue[dialogueIndex].TextDelay;
+            else if (ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker.TextDelay > 0)
+                textDelay = ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker.TextDelay;
+
             string FullText = "";
+            List<int> endPoints = [];
+            count = 0;
             for (int i = 0; i < Dialogue.Length; i++)
+            {
                 FullText += Dialogue[i].Text;
+                count += Dialogue[i].Text.Length - 1;
+                endPoints.Add(count);
+            }
 
             if (textIndex < FullText.Length)
             {
-                switch (FullText[textIndex])
+                if (counter == 0)
                 {
-                    case '.':
-                    case '?':
-                    case '!':
-                    case ';':
-                    case ':':
-                    case '-':
-                        storedDelay += 60;
-                        break;
-                    case ',':
-                        storedDelay += 30;
-                        break;
+                    if (endPoints.Contains(textIndex))
+                        storedDelay = Dialogue[endPoints.IndexOf(textIndex)].EndPause;
+                    else
+                        switch (FullText[textIndex])
+                        {
+                            case '.':
+                            case '?':
+                            case '!':
+                            case ';':
+                            case ':':
+                                storedDelay += 10;
+                                break;
+                            case '-':
+                                if (FullText[textIndex + 1] == ' ')
+                                    storedDelay += 10;
+                                break;
+                            case ',':
+                                storedDelay += 5;
+                                break;
+                        }
                 }
-                if ((FullText[textIndex] == ' ' && --storedDelay == 0 || FullText[textIndex] != ' ') && ++counter % textDelay == 0 && counter >= 0)
+                //Main.NewText(storedDelay);
+                if (++counter % (FullText[textIndex] == ' ' && storedDelay > 0 ? textDelay * storedDelay : textDelay) == 0 && counter >= 0)
                 {
-                    textIndex++;
+                    if (FullText[textIndex] == ' ')
+                        storedDelay = 0;
                     counter = 0;
+
+                    ++textIndex;
                 }
             }
+            else
+                crawling = false;
         }
 
         protected override void DrawSelf(SpriteBatch spriteBatch)
-        {           
+        {
+            CalculatedStyle innerDimensions = GetInnerDimensions();
+            float xPageTop = innerDimensions.X;
+            float yPageTop = innerDimensions.Y + 16;
+            Vector2 pageTop = new(xPageTop, yPageTop);
+
             int DialogueStringIndex = 0;
             int subIndex = 0;
 
-            for (int i = 0; i <= textIndex; i++)
+            for (int i = 0; i < textIndex; i++)
             {
                 DialogueString myDialogue = Dialogue[DialogueStringIndex];
                 string myText = myDialogue.Text;
-                char c = myText[subIndex];
-
-                if(i == textIndex)
-                    CharStartTimes[i] = Main.GlobalTimeWrappedHourly;
 
                 #region Dialogue Parsing
                 if (subIndex >= myText.Length)
                 {
                     subIndex = 0;
                     DialogueStringIndex++;
+
+                    myDialogue = Dialogue[DialogueStringIndex];
+                    myText = myDialogue.Text;
                 }
                 #endregion
 
-                DynamicSpriteFont font = FontAssets.MouseText.Value;
+                char c = myText[subIndex];
 
-                if(c == '\r')
+                DynamicSpriteFont font = FontAssets.ItemStack.Value;
+
+                if (c == '\r')
                     continue;
 
                 #region Drawing
                 Vector2 pos = CharPositions[i];
-                Vector2 scale = myDialogue.Scale;
+                //Vector2 scale = myDialogue.Scale;
+                float opacity = 1f;
+                float time = 10f;
 
-                if (Main.GlobalTimeWrappedHourly - CharStartTimes[i] / 45f < 1f)
+                if (CharUpTimes[i] / time < 1f)
                 {
-                    pos = Vector2.Lerp(CharPositions[i] + (Vector2.One * 16f * myDialogue.Scale), CharPositions[i], Main.GlobalTimeWrappedHourly - CharStartTimes[i] / 45f);
-                    if(Main.GlobalTimeWrappedHourly - CharStartTimes[i] / 30f < 1f)
-                        scale = Vector2.Lerp(Vector2.Zero, myDialogue.Scale, Main.GlobalTimeWrappedHourly - CharStartTimes[i] / 30f);
+                    float easing = (float)Math.Sin(CharUpTimes[i] / time * MathF.PI / 2f);
+                    Vector2 startOffset = Vector2.One * 16f * myDialogue.Scale;
+                    startOffset.X *= 0.75f;
+                    startOffset.Y *= 1f;
+                    pos = Vector2.Lerp(CharPositions[i] + startOffset, CharPositions[i], easing);
+                    opacity = easing;
                 }
 
                 TextEffect effect = new();
-                if(myDialogue.TextEffect != null)
+                if (myDialogue.TextEffect != null)
                     effect = (TextEffect)Activator.CreateInstance(Type.GetType(myDialogue.TextEffect));
 
-                SpriteCharacterData characterData = font.SpriteCharacters[c];
-                spriteBatch.Draw(characterData.Texture, pos + effect.MoveOffset(), characterData.Glyph, myDialogue.Rainbow ? Main.DiscoColor : new Color(myDialogue.Color.ToVector3() + effect.ColorOffset().ToVector3()) * (myDialogue.Opacity + effect.OpacityOffset()), 0f + effect.RotationOffset(), Vector2.Zero, scale + effect.ScaleOffset(), SpriteEffects.None, 1);
-                #endregion
+                Color color = myDialogue.Rainbow ? Main.DiscoColor : myDialogue.GetTextColor();
 
+                SpriteCharacterData characterData = font.SpriteCharacters[c];
+                for (int j = 0; j < ChatManager.ShadowDirections.Length; j++)
+                {
+                    spriteBatch.Draw(characterData.Texture, pageTop + pos + effect.MoveOffset(i) + (ChatManager.ShadowDirections[j] * 2), characterData.Glyph, Color.Black * (myDialogue.Opacity + effect.OpacityOffset(i)), 0f + effect.RotationOffset(i), Vector2.Zero, myDialogue.Scale + effect.ScaleOffset(i), SpriteEffects.None, 1);
+                }
+                spriteBatch.Draw(characterData.Texture, pageTop + pos + effect.MoveOffset(i), characterData.Glyph, color * (myDialogue.Opacity + effect.OpacityOffset(i)) * opacity, 0f + effect.RotationOffset(i), Vector2.Zero, myDialogue.Scale + effect.ScaleOffset(i), SpriteEffects.None, 1);
+                #endregion
                 subIndex++;
+                CharUpTimes[i]++;
             }
             #region Old Method
             /*
@@ -624,17 +714,8 @@ public class DialogueUIState : UIState
         Append(Textbox);
         if (!ModContent.GetInstance<DialogueUISystem>().swappingStyle)
         {
-            DialogueText DialogueText = new()
-            {
-                boxWidth = Textbox.Width.Pixels,
-                Dialogue = CurrentDialogue.DialogueText
-            };
-            if (CurrentDialogue.TextDelay > 0)
-                DialogueText.textDelay = CurrentDialogue.TextDelay;
-            else if (CurrentCharacter.TextDelay > 0)
-                DialogueText.textDelay = CurrentCharacter.TextDelay;
-            else
-                DialogueText.textDelay = 3;
+            DialogueText DialogueText = new(CurrentDialogue.DialogueText);
+
             style.OnDialogueTextCreate(DialogueText);
             Textbox.Append(DialogueText);
 
