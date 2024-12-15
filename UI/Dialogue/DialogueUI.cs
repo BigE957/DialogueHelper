@@ -15,7 +15,7 @@ using Terraria.GameContent;
 using static ReLogic.Graphics.DynamicSpriteFont;
 using ReLogic.Graphics;
 using DialogueHelper.UI.Dialogue.TextEffects;
-using CalamityMod.NPCs.SunkenSea;
+using Terraria.Audio;
 
 namespace DialogueHelper.UI.Dialogue;
 
@@ -33,15 +33,15 @@ public class DialogueUIState : UIState
         ];
 
         public DialogueString[] Dialogue = dialogue;
-        public Vector2[] CharPositions;
-        public float[] CharUpTimes;
+        public bool Crawling = true;
 
-        public bool crawling = true;
-        internal float boxWidth = 0f;
-        internal Vector2 textScale = new(1.5f, 1.5f);
         internal int textIndex = 0;
+
+        private Vector2[] CharPositions;
+        private float[] CharUpTimes;
         private int counter = -30;
         private int storedDelay = 0;
+
         public override void OnActivate()
         {
             string Text = "";
@@ -157,11 +157,18 @@ public class DialogueUIState : UIState
                 dialogueIndex++;
             }
 
+            DialogueUISystem uiSystem = ModContent.GetInstance<DialogueUISystem>();
+            SoundStyle talkSound;
+            if (Dialogue[dialogueIndex].TalkSoundPath != null)
+                talkSound = new(Dialogue[dialogueIndex].TalkSoundPath, Dialogue[dialogueIndex].TalkVariantCount);
+            else
+                talkSound = new(uiSystem.CurrentSpeaker.TalkSoundPath, uiSystem.CurrentSpeaker.TalkSoundVariants);
+
             int textDelay = 2;
-            if (Dialogue[dialogueIndex].TextDelay > 0)
+            if (Dialogue[dialogueIndex].TextDelay > -1)
                 textDelay = Dialogue[dialogueIndex].TextDelay;
-            else if (ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker.TextDelay > 0)
-                textDelay = ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker.TextDelay;
+            else if (uiSystem.CurrentSpeaker.TextDelay > -1)
+                textDelay = uiSystem.CurrentSpeaker.TextDelay;
 
             string FullText = "";
             List<int> endPoints = [];
@@ -204,12 +211,12 @@ public class DialogueUIState : UIState
                     if (FullText[textIndex] == ' ')
                         storedDelay = 0;
                     counter = 0;
-
+                    SoundEngine.PlaySound(talkSound);
                     ++textIndex;
                 }
             }
             else
-                crawling = false;
+                Crawling = false;
         }
 
         protected override void DrawSelf(SpriteBatch spriteBatch)
@@ -615,7 +622,7 @@ public class DialogueUIState : UIState
         DialogueText dialogue = (DialogueText)Textbox.Children.Where(c => c.GetType() == typeof(DialogueText)).First();
         DialogueTree CurrentTree = ModContent.GetInstance<DialogueUISystem>().CurrentTree;
         Dialogue CurrentDialogue = CurrentTree.Dialogues[DialogueIndex];
-        if (CurrentDialogue.Responses.Length == 0 && !dialogue.crawling)
+        if (CurrentDialogue.Responses.Length == 0 && !dialogue.Crawling)
         {
             ModContent.GetInstance<DialogueUISystem>().ButtonClick?.Invoke(TreeKey, DialogueIndex, 0);
 
@@ -627,7 +634,7 @@ public class DialogueUIState : UIState
             else
                 ModContent.GetInstance<DialogueUISystem>().UpdateDialogueUI(TreeKey, DialogueIndex + 1);
         }
-        else if (dialogue.crawling)
+        else if (dialogue.Crawling)
             dialogue.textIndex = CurrentDialogue.GetFullText().Length;
     }
     internal void OnButtonClick(UIMouseEvent evt, UIElement listeningElement)

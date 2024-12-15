@@ -293,6 +293,8 @@ public class Character
     public int TextDelay { get; set; } = -1;
     public string PrimaryColor { get; set; } = null;
     public string SecondaryColor { get; set; } = null;
+    public string TalkSoundPath { get; set; } = "DialogueHelper/UI/Dialogue/TextSounds/Default";
+    public int TalkSoundVariants { get; set; } = 1;
 
     public Color GetPrimaryColor()
     {
@@ -358,6 +360,8 @@ public class DialogueString
     public int EndPause { get; set; } = 0;
     public string TextEffect { get; set; } = null;
     public bool Rainbow { get; set; } = false;
+    public string TalkSoundPath { get; set; } = null;
+    public int TalkVariantCount { get; set; } = 0;
 
     public Color GetTextColor()
     {

@@ -157,7 +157,7 @@ public class DefaultDialogueStyle : DialogueStyle
             for (int i = 0; i < responseButtons.Length; i++)
             {
                 UIElement button = responseButtons[i];
-                if (!dialogue.crawling && button.Width.Pixels < ButtonSize.X)
+                if (!dialogue.Crawling && button.Width.Pixels < ButtonSize.X)
                 {
                     if (!textbox.HasChild(button))
                         textbox.AddOrRemoveChild(button, true);
