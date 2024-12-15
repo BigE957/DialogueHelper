@@ -4,7 +4,7 @@ using Terraria.UI;
 
 namespace DialogueHelper.UI.Dialogue.Emoticons;
 
-public class BaseEmoticon : UIElement
+public class Emoticon : UIElement
 {
     public int Counter = 0;
     public int FrameNum = 0;
