@@ -100,6 +100,7 @@ public class DialogueUISystem : ModSystem
 
     public void DisplayDialogueTree(Mod mod, string TreeKey, int DialogueIndex = 0)
     {
+        Vector2 ScreenSize = new Vector2(Main.screenHeight, Main.screenWidth);
         CurrentDialogueIndex = DialogueIndex;
 
         isDialogueOpen = true;
@@ -158,7 +159,8 @@ public class DialogueUISystem : ModSystem
         DialogueUIState = new()
         {
             TreeKey = TreeKey,
-            DialogueIndex = DialogueIndex
+            DialogueIndex = DialogueIndex,
+            ScreenSize = ScreenSize,
         };
         DialogueUIState.Activate();
 
