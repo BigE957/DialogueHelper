@@ -396,7 +396,7 @@ public class DialogueUIState : UIState
                 Append(Speaker);
                 style.PostSpeakerCreate(DialogueIndex, Speaker);
 
-                if (CurrentDialogue.Emoticon != null || CurrentTree.Dialogues[ModContent.GetInstance<DialogueUISystem>().FormerDialogueIndex].Emoticon != null)
+                if (CurrentDialogue.Emoticon != null || (ModContent.GetInstance<DialogueUISystem>().FormerDialogueIndex != -1 && CurrentTree.Dialogues[ModContent.GetInstance<DialogueUISystem>().FormerDialogueIndex].Emoticon != null))
                 {
                     Emoticon emoticon;
                     if (CurrentDialogue.Emoticon == null)
