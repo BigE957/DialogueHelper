@@ -316,7 +316,6 @@ public class DialogueUIState : UIState
 
     internal string TreeKey;
     internal int DialogueIndex = 0;
-    internal Vector2 ScreenSize; //Used because in some interaction cases Main.screenwidth/height is inaccurate.
 
     private int counter = 0;
     private int frameCounter = 1;
@@ -384,14 +383,14 @@ public class DialogueUIState : UIState
                 };
 
                 if (justOpened || newSpeaker)
-                    SetRectangle(Speaker, left: 0, top: ScreenSize.Y, width: speakerFrameTexture.Width, height: speakerFrameTexture.Height);
+                    SetRectangle(Speaker, left: 0, top: Main.screenHeight, width: speakerFrameTexture.Width, height: speakerFrameTexture.Height);
                 else
-                    SetRectangle(Speaker, left: 0, top: ScreenSize.Y - Speaker.Height.Pixels + 16, width: speakerFrameTexture.Width, height: speakerFrameTexture.Height);
+                    SetRectangle(Speaker, left: 0, top: Main.screenHeight - Speaker.Height.Pixels + 16, width: speakerFrameTexture.Width, height: speakerFrameTexture.Height);
 
                 if (speakerRight)
-                    Speaker.Left.Pixels = returningSpeaker ? ScreenSize.X / 1.2f - Speaker.Width.Pixels / 2f : ScreenSize.X / 1.25f - Speaker.Width.Pixels / 2f;
+                    Speaker.Left.Pixels = returningSpeaker ? Main.screenWidth / 1.2f - Speaker.Width.Pixels / 2f : Main.screenWidth / 1.25f - Speaker.Width.Pixels / 2f;
                 else
-                    Speaker.Left.Pixels = returningSpeaker ? 0f + Speaker.Width.Pixels / 2f : ScreenSize.X * 0.05f + Speaker.Width.Pixels / 2f;
+                    Speaker.Left.Pixels = returningSpeaker ? 0f + Speaker.Width.Pixels / 2f : Main.screenWidth * 0.05f + Speaker.Width.Pixels / 2f;
 
                 style.PreSpeakerCreate(DialogueIndex, Speaker);
                 Append(Speaker);
@@ -431,12 +430,12 @@ public class DialogueUIState : UIState
                     Color = Color.Gray,
                 };
 
-                SetRectangle(SubSpeaker, left: 0, top: ScreenSize.Y - SubSpeaker.Height.Pixels + 16, width: subSpeakerFrameTexture.Width, height: subSpeakerFrameTexture.Height);
+                SetRectangle(SubSpeaker, left: 0, top: Main.screenHeight - SubSpeaker.Height.Pixels + 16, width: subSpeakerFrameTexture.Width, height: subSpeakerFrameTexture.Height);
 
                 if (speakerRight)
-                    SubSpeaker.Left.Pixels = newSpeaker || returningSpeaker ? ScreenSize.X * 0.05f + SubSpeaker.Width.Pixels / 2f : 0f + SubSpeaker.Width.Pixels / 2f;
+                    SubSpeaker.Left.Pixels = newSpeaker || returningSpeaker ? Main.screenWidth * 0.05f + SubSpeaker.Width.Pixels / 2f : 0f + SubSpeaker.Width.Pixels / 2f;
                 else
-                    SubSpeaker.Left.Pixels = newSpeaker || returningSpeaker ? ScreenSize.X / 1.25f - SubSpeaker.Width.Pixels / 2f : ScreenSize.X / 1.35f - SubSpeaker.Width.Pixels / 2f;
+                    SubSpeaker.Left.Pixels = newSpeaker || returningSpeaker ? Main.screenWidth / 1.25f - SubSpeaker.Width.Pixels / 2f : Main.screenWidth / 1.35f - SubSpeaker.Width.Pixels / 2f;
 
                 style.PreSubSpeakerCreate(DialogueIndex, Speaker, SubSpeaker);
                 Append(SubSpeaker);
@@ -471,15 +470,15 @@ public class DialogueUIState : UIState
             //Main.NewText(Speaker.Left.Pixels);
             if (Speaker != null)
             {
-                float goalHeight = ScreenSize.Y - Speaker.Height.Pixels + 16;
+                float goalHeight = Main.screenHeight - Speaker.Height.Pixels + 16;
                 if (Speaker.Top.Pixels > goalHeight)
                 {
                     Speaker.Top.Pixels -= (Speaker.Top.Pixels - goalHeight) / 15;
                     if (Speaker.Top.Pixels - goalHeight < 1)
                         Speaker.Top.Pixels = goalHeight;
                 }
-                float goalLeft = ScreenSize.X * 0.05f + Speaker.Width.Pixels / 2f;
-                float goalRight = ScreenSize.X / 1.25f - Speaker.Width.Pixels / 2f;
+                float goalLeft = Main.screenWidth * 0.05f + Speaker.Width.Pixels / 2f;
+                float goalRight = Main.screenWidth / 1.25f - Speaker.Width.Pixels / 2f;
                 //Main.NewText(ModContent.GetInstance<DialogueUISystem>().speakerRight);
                 if (ModContent.GetInstance<DialogueUISystem>().speakerRight && Speaker.Left.Pixels > goalRight)
                 {
@@ -520,7 +519,7 @@ public class DialogueUIState : UIState
             {
                 if (ModContent.GetInstance<DialogueUISystem>().dismissSubSpeaker)
                 {
-                    float goalRight = ScreenSize.X + SubSpeaker.Width.Pixels;
+                    float goalRight = Main.screenWidth + SubSpeaker.Width.Pixels;
                     float goalLeft = -SubSpeaker.Width.Pixels * 2;
 
                     if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels < goalRight)
@@ -546,15 +545,15 @@ public class DialogueUIState : UIState
                 else
                 {
                     float goalLeft = 0f + SubSpeaker.Width.Pixels / 2f;
-                    float goalRight = ScreenSize.X / 1.2f - SubSpeaker.Width.Pixels / 2f;
+                    float goalRight = Main.screenWidth / 1.2f - SubSpeaker.Width.Pixels / 2f;
 
-                    if (ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels > 0f - ScreenSize.X * 0.1f)
+                    if (ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels > 0f - Main.screenWidth * 0.1f)
                     {
                         SubSpeaker.Left.Pixels -= (SubSpeaker.Left.Pixels - goalLeft) / 20;
                         if (SubSpeaker.Left.Pixels - goalLeft < 1)
                             SubSpeaker.Left.Pixels = goalLeft;
                     }
-                    else if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels < ScreenSize.X * 1.1f)
+                    else if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels < Main.screenWidth * 1.1f)
                     {
                         SubSpeaker.Left.Pixels += (goalRight - SubSpeaker.Left.Pixels) / 20;
                         if (goalRight - SubSpeaker.Left.Pixels < 1)
@@ -567,7 +566,7 @@ public class DialogueUIState : UIState
         {
             style.PostUpdateClosing(Textbox, Speaker, SubSpeaker);
 
-            float goalRight = ScreenSize.X + Speaker.Width.Pixels;
+            float goalRight = Main.screenWidth + Speaker.Width.Pixels;
             float goalLeft = -Speaker.Width.Pixels * 2;
 
             if (Speaker != null)
@@ -673,8 +672,8 @@ public class DialogueUIState : UIState
     public void SpawnTextBox()
     {
         DialogueStyle style;
-        float xResolutionScale = ScreenSize.X / 2560f;
-        float yResolutionScale = ScreenSize.Y / 1440f;
+        float xResolutionScale = Main.screenWidth / 2560f;
+        float yResolutionScale = Main.screenHeight / 1440f;
 
         DialogueTree CurrentTree = ModContent.GetInstance<DialogueUISystem>().CurrentTree;
         Dialogue CurrentDialogue = CurrentTree.Dialogues[DialogueIndex];

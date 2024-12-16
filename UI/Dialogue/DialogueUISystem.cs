@@ -72,9 +72,14 @@ public class DialogueUISystem : ModSystem
         isDialogueOpen = false;
         DialogueUI?.SetState(null);
     }
-
+    Point RealScreenSize = Point.Zero;
     public override void UpdateUI(GameTime gameTime)
     {
+        if (Main.screenWidth > RealScreenSize.X)
+            RealScreenSize.X = Main.screenWidth;
+        if (Main.screenHeight > RealScreenSize.Y)
+            RealScreenSize.Y = Main.screenHeight;
+
         if (DialogueUI?.CurrentState != null)
         {
             DialogueUI?.Update(gameTime);
@@ -100,7 +105,12 @@ public class DialogueUISystem : ModSystem
 
     public void DisplayDialogueTree(Mod mod, string TreeKey, int DialogueIndex = 0)
     {
-        Vector2 ScreenSize = new Vector2(Main.screenHeight, Main.screenWidth);
+        Point storedScreenSize = new(Main.screenWidth, Main.screenHeight);
+        if (Main.screenWidth != RealScreenSize.X)
+            Main.screenWidth = RealScreenSize.X;
+        if (Main.screenHeight != RealScreenSize.Y)
+            Main.screenHeight = RealScreenSize.Y;
+
         CurrentDialogueIndex = DialogueIndex;
 
         isDialogueOpen = true;
@@ -159,12 +169,14 @@ public class DialogueUISystem : ModSystem
         DialogueUIState = new()
         {
             TreeKey = TreeKey,
-            DialogueIndex = DialogueIndex,
-            ScreenSize = ScreenSize,
+            DialogueIndex = DialogueIndex
         };
         DialogueUIState.Activate();
 
         DialogueUI?.SetState(DialogueUIState);
+
+        Main.screenWidth = storedScreenSize.X;
+        Main.screenHeight = storedScreenSize.Y;
     }
 
     public void UpdateDialogueUI(string treeKey, int DialogueIndex)
