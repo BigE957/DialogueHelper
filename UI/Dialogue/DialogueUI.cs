@@ -56,6 +56,15 @@ public class DialogueUIState : UIState
             Vector2 zero = Vector2.Zero;
             bool newLine = true;
 
+            DialogueUISystem uiSystem = ModContent.GetInstance<DialogueUISystem>();
+            DialogueStyle style;
+            if (uiSystem.swappingStyle)
+                style = (DialogueStyle)Activator.CreateInstance(Type.GetType(uiSystem.SubSpeaker.Style));
+            else
+                style = (DialogueStyle)Activator.CreateInstance(Type.GetType(uiSystem.CurrentSpeaker.Style) ?? typeof(DefaultDialogueStyle));
+
+            int LineCount = 0;
+
             for (int i = 0; i < Text.Length; i++)
             {
                 DialogueString myDialogue = Dialogue[DialogueStringIndex];
@@ -101,7 +110,7 @@ public class DialogueUIState : UIState
 
                         carry += font.CharacterSpacing * myDialogue.Scale.X;
                         carry += charKerning.X * myDialogue.Scale.X;
-                        if (CharPositions[i - 1].X + (carry + (charPadding.X * myDialogue.Scale.X)) > Parent.Width.Pixels - 48)
+                        if (CharPositions[i - 1].X + (carry + (charPadding.X * myDialogue.Scale.X)) + style.LineBreakOffsets[LineCount].X > Parent.Width.Pixels - 48 - style.LineBreakOffsets[LineCount].Y)
                         {
                             newLine = true;
                             break;
@@ -120,6 +129,9 @@ public class DialogueUIState : UIState
                 }
                 #endregion
 
+                if(newLine)
+                    LineCount++;
+
                 #region Positioning
                 SpriteCharacterData characterData = font.SpriteCharacters[c];
                 Vector3 kerning = characterData.Kerning;
@@ -135,7 +147,7 @@ public class DialogueUIState : UIState
                 position.X += padding.X * myDialogue.Scale.X;
                 position.Y += padding.Y * myDialogue.Scale.Y;
 
-                CharPositions[i] = position;
+                CharPositions[i] = position + (Vector2.UnitX * style.LineBreakOffsets[LineCount]);
 
                 zero.X += (kerning.Y + kerning.Z) * myDialogue.Scale.X;
                 newLine = false;
@@ -310,9 +322,6 @@ public class DialogueUIState : UIState
     public MouseBlockingUIPanel Textbox;
     public FlippableUIImage Speaker;
     public FlippableUIImage SubSpeaker;
-
-    public delegate bool CharacterNotifier(string characterName, string expressionName);
-    public CharacterNotifier AnimationConditionCheck;
 
     internal string TreeKey;
     internal int DialogueIndex = 0;
@@ -493,7 +502,7 @@ public class DialogueUIState : UIState
                         Speaker.Left.Pixels = goalLeft;
                 }
                 Expression currentExpression = CurrentCharacter.Expressions[CurrentDialogue.ExpressionIndex];
-                if (currentExpression.FrameCount != 1 && currentExpression.FrameRate != 0 && (!currentExpression.HasAnimateCondition || AnimationConditionCheck.Invoke(CurrentCharacter.Name, currentExpression.Title)) && counter % currentExpression.FrameRate == 0)
+                if (currentExpression.FrameCount != 1 && currentExpression.FrameRate != 0 && counter % currentExpression.FrameRate == 0)
                 {
                     frameCounter++;
                     if (frameCounter > currentExpression.FrameCount)

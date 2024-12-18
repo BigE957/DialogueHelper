@@ -299,7 +299,6 @@ public class Character
             FrameCount = 1,
             FrameRate = 0,
             Loop = false,
-            HasAnimateCondition = false,
         }
     };
     public float Scale { get; set; } = 1f;
@@ -335,7 +334,6 @@ public class Expression
     public int FrameCount { get; set; } = 1;
     public int FrameRate { get; set; } = 0;
     public bool Loop { get; set; } = false;
-    public bool HasAnimateCondition { get; set; } = false;
     public ClassRectangle HeadArea { get; set; } = ClassRectangle.Empty;
 }
 

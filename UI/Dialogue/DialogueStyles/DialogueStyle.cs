@@ -1,5 +1,5 @@
-﻿using DialogueHelper.UI;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 using Terraria.GameContent.UI.Elements;
 using static DialogueHelper.UI.Dialogue.DialogueUIState;
 
@@ -12,6 +12,8 @@ public class DialogueStyle
     public virtual Color? ButtonBorderColor => null;
     public virtual Color? BackgroundColor => null;
     public virtual Color? BackgroundBorderColor => null;
+    public virtual List<Vector2> LineBreakOffsets => [];
+
     #region UI Creation Methods
     public virtual void PreUICreate(int dialogueIndex)
     {
