@@ -323,6 +323,9 @@ public class DialogueUIState : UIState
     public FlippableUIImage Speaker;
     public FlippableUIImage SubSpeaker;
 
+    public delegate bool CharacterNotifier(string characterName, string expressionName);
+    public CharacterNotifier AnimationConditionCheck;
+
     internal string TreeKey;
     internal int DialogueIndex = 0;
 
@@ -488,7 +491,7 @@ public class DialogueUIState : UIState
                 }
                 float goalLeft = Main.screenWidth * 0.05f + Speaker.Width.Pixels / 2f;
                 float goalRight = Main.screenWidth / 1.25f - Speaker.Width.Pixels / 2f;
-                //Main.NewText(ModContent.GetInstance<DialogueUISystem>().speakerRight);
+
                 if (ModContent.GetInstance<DialogueUISystem>().speakerRight && Speaker.Left.Pixels > goalRight)
                 {
                     Speaker.Left.Pixels -= (Speaker.Left.Pixels - goalRight) / 20;
@@ -651,7 +654,7 @@ public class DialogueUIState : UIState
     {
         DialogueTree CurrentTree = ModContent.GetInstance<DialogueUISystem>().CurrentTree;
         int responseCount = CurrentTree.Dialogues[DialogueIndex].Responses.Length;
-        UIText text = (UIText)listeningElement.Children.ToArray().First();
+        UIText text = (UIText)listeningElement.Children.ToArray().First(c => c.GetType() == typeof(UIText));
         int buttonID = 0;
         for (int i = 0; i < responseCount; i++)
         {
