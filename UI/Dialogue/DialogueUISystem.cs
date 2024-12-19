@@ -54,7 +54,7 @@ public class DialogueUISystem : ModSystem
 
     public bool styleSwapped = false;
 
-    public Context? CurrentDialogueContext = null;
+    public Context CurrentDialogueContext = new("", []);
 
     public override void Load()
     {
@@ -70,7 +70,7 @@ public class DialogueUISystem : ModSystem
     {
         isDialogueOpen = false;
         DialogueUI?.SetState(null);
-        CurrentDialogueContext = null;
+        CurrentDialogueContext = new("", []);
     }
     Point RealScreenSize = Point.Zero;
     public override void UpdateUI(GameTime gameTime)
@@ -273,7 +273,7 @@ public class DialogueUISystem : ModSystem
 
     public void HideDialogueUI()
     {
-        CurrentDialogueContext = null;
+        CurrentDialogueContext = new("", []);
         isDialogueOpen = false;
         DialogueUI?.SetState(null);
     }
