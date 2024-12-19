@@ -12,7 +12,19 @@ public class DialogueStyle
     public virtual Color? ButtonBorderColor => null;
     public virtual Color? BackgroundColor => null;
     public virtual Color? BackgroundBorderColor => null;
-    public virtual List<Vector2> LineBreakOffsets => [];
+    public virtual List<Vector2> LineBreakOffsets => 
+    [
+        new(0,0),
+        new(0,0),
+        new(0,0),
+        new(0,0),
+        new(0,0),
+        new(0,0),
+        new(0,0),
+        new(0,0),
+        new(0,0),
+        new(0,0),
+    ];
 
     #region UI Creation Methods
     public virtual void PreUICreate(int dialogueIndex)
