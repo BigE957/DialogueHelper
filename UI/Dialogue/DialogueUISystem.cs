@@ -7,9 +7,6 @@ using System;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria;
-using DialogueHelper.UI.Dialogue.DialogueStyles;
-using DialogueHelper.UI.Dialogue.TextEffects;
-using System.Linq;
 
 namespace DialogueHelper.UI.Dialogue;
 
@@ -57,6 +54,8 @@ public class DialogueUISystem : ModSystem
 
     public bool styleSwapped = false;
 
+    public Context? CurrentDialogueContext = null;
+
     public override void Load()
     {
         if (!Main.dedServ)
@@ -71,6 +70,7 @@ public class DialogueUISystem : ModSystem
     {
         isDialogueOpen = false;
         DialogueUI?.SetState(null);
+        CurrentDialogueContext = null;
     }
     Point RealScreenSize = Point.Zero;
     public override void UpdateUI(GameTime gameTime)
@@ -81,9 +81,7 @@ public class DialogueUISystem : ModSystem
             RealScreenSize.Y = Main.screenHeight;
 
         if (DialogueUI?.CurrentState != null)
-        {
             DialogueUI?.Update(gameTime);
-        }
     }
 
     public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
@@ -103,8 +101,10 @@ public class DialogueUISystem : ModSystem
         }
     }
 
-    public void DisplayDialogueTree(Mod mod, string TreeKey, int DialogueIndex = 0)
+    public void DisplayDialogueTree(Mod mod, string TreeKey, Context context, int DialogueIndex = 0)
     {
+        CurrentDialogueContext = context;
+
         Point storedScreenSize = new(Main.screenWidth, Main.screenHeight);
         if (Main.screenWidth != RealScreenSize.X)
             Main.screenWidth = RealScreenSize.X;
@@ -273,6 +273,7 @@ public class DialogueUISystem : ModSystem
 
     public void HideDialogueUI()
     {
+        CurrentDialogueContext = null;
         isDialogueOpen = false;
         DialogueUI?.SetState(null);
     }
@@ -280,11 +281,12 @@ public class DialogueUISystem : ModSystem
 }
 
 #region Structures
-/// <param name="expressions">An array of identifiers, smililar to a Character's <see cref="ID"/>, used to find individual Expression Assets within the Character Assets Folder.</param>
-/// <param name="Name">The actual name of the character, used by the Textbox. Can include spaces and other formatting, unlike the <see cref="ID"/>. Will default to the Character's <see cref="ID"/> if not set.</param>
-/// <param name="scale">Determines the scale the character portrait will be drawn at by the Dialogue System. Defaults to <see cref="2f"/>.</param>
-/// <param name="style">The Dialogue Style, in the form of a <see cref="Type"/>, associated with this Character. Defaults to <see cref="null"/>, meaning it will use the <see cref="DefaultDialogueStyle"/>.</param>
-/// <param name="textDelay">The Text Delay associated with this character. Affects how long between characters appearing in the Textbox. Defaults to <see cref="3"/>.</param>
+public struct Context(string catagory, float[] args)
+{
+    public string Catagory = catagory;
+    public float[] Arguments = args;
+}
+
 /// <returns>
 /// Represents a character able to be used within a <see cref="DialogueTree"/>.
 /// </returns>
