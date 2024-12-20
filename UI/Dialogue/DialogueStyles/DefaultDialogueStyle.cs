@@ -14,15 +14,22 @@ public class DefaultDialogueStyle : DialogueStyle
     public override Vector2 ButtonSize => new(150, 50);
     public override void OnTextboxCreate(UIPanel textbox, FlippableUIImage speaker, FlippableUIImage subSpeaker)
     {
-        bool speakerRight = ModContent.GetInstance<DialogueUISystem>().speakerRight;
-        bool spawnBottom = ModContent.GetInstance<DialogueUISystem>().justOpened || ModContent.GetInstance<DialogueUISystem>().styleSwapped;
-        bool newSubSpeaker = ModContent.GetInstance<DialogueUISystem>().newSubSpeaker;
+        DialogueUISystem uiSystem = ModContent.GetInstance<DialogueUISystem>();
+        bool speakerRight = uiSystem.speakerRight;
+        bool spawnBottom = uiSystem.justOpened || uiSystem.styleSwapped;
+        bool newSubSpeaker = uiSystem.newSubSpeaker;
         textbox.SetPadding(0);
         SetRectangle(textbox, left: 0, top: spawnBottom ? Main.screenHeight * 1.05f : Main.screenHeight / 1.75f, width: Main.screenWidth / 1.75f, height: Main.screenHeight / 3);
-        if (newSubSpeaker && !ModContent.GetInstance<DialogueUISystem>().styleSwapped)
-            textbox.Left.Pixels = speakerRight ? Main.screenWidth - textbox.Width.Pixels - Main.screenWidth / 12f : Main.screenWidth / 12f;
+
+        if (uiSystem.CurrentTree.Characters.Length == 0)
+            textbox.Left.Pixels = (Main.screenWidth / 2f) - (textbox.Width.Pixels / 2f);
         else
-            textbox.Left.Pixels = speakerRight ? Main.screenWidth / 12f : Main.screenWidth - textbox.Width.Pixels - Main.screenWidth / 12f;
+        {
+            if (newSubSpeaker && !uiSystem.styleSwapped)
+                textbox.Left.Pixels = speakerRight ? Main.screenWidth - textbox.Width.Pixels - Main.screenWidth / 12f : Main.screenWidth / 12f;
+            else
+                textbox.Left.Pixels = speakerRight ? Main.screenWidth / 12f : Main.screenWidth - textbox.Width.Pixels - Main.screenWidth / 12f;
+        }
 
     }
     public override void OnDialogueTextCreate(DialogueText text)
@@ -51,57 +58,62 @@ public class DefaultDialogueStyle : DialogueStyle
         Dialogue CurrentDialogue = ModContent.GetInstance<DialogueUISystem>().CurrentTree.Dialogues[dialogueIndex];
         Character CurrentCharacter = ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker;
 
-        MouseBlockingUIPanel NameBox;
-        NameBox = new MouseBlockingUIPanel();
-        NameBox.SetPadding(0);
-        SetRectangle(NameBox, left: -25f, top: -25f, width: 300f, height: 60f);
-        if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
+        if (CurrentCharacter != null)
         {
-            Character FormerCharacter = ModContent.GetInstance<DialogueUISystem>().SubSpeaker;
-            if (FormerCharacter.PrimaryColor != null)
-                NameBox.BackgroundColor = FormerCharacter.GetPrimaryColor();
-            else
-                NameBox.BackgroundColor = new Color(73, 94, 171);
-
-            if (FormerCharacter.SecondaryColor != null)
-                NameBox.BorderColor = FormerCharacter.GetSecondaryColor();
-        }
-        else
-        {
-            if (CurrentCharacter.PrimaryColor != null)
-                NameBox.BackgroundColor = CurrentCharacter.GetPrimaryColor();
-            else
-                NameBox.BackgroundColor = new Color(73, 94, 171);
-
-            if (CurrentCharacter.SecondaryColor != null)
-                NameBox.BorderColor = CurrentCharacter.GetSecondaryColor();
-        }
-        textbox.Append(NameBox);
-
-        UIText NameText;
-        if (CurrentDialogue.CharacterIndex == -1)
-            NameText = new UIText("...");
-        else
-        {
+            MouseBlockingUIPanel NameBox;
+            NameBox = new MouseBlockingUIPanel();
+            NameBox.SetPadding(0);
+            SetRectangle(NameBox, left: -25f, top: -25f, width: 300f, height: 60f);
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
             {
                 Character FormerCharacter = ModContent.GetInstance<DialogueUISystem>().SubSpeaker;
-                NameText = new UIText(FormerCharacter.Name, 1f, true);
+                if (FormerCharacter.PrimaryColor != null)
+                    NameBox.BackgroundColor = FormerCharacter.GetPrimaryColor();
+                else
+                    NameBox.BackgroundColor = new Color(73, 94, 171);
+
+                if (FormerCharacter.SecondaryColor != null)
+                    NameBox.BorderColor = FormerCharacter.GetSecondaryColor();
             }
             else
-                NameText = new UIText(CurrentCharacter.Name, 1f, true);
+            {
+                if (CurrentCharacter != null && CurrentCharacter.PrimaryColor != null)
+                    NameBox.BackgroundColor = CurrentCharacter.GetPrimaryColor();
+                else
+                    NameBox.BackgroundColor = new Color(73, 94, 171);
+
+                if (CurrentCharacter.SecondaryColor != null)
+                    NameBox.BorderColor = CurrentCharacter.GetSecondaryColor();
+            }
+            textbox.Append(NameBox);
+
+            UIText NameText;
+            if (CurrentDialogue.CharacterIndex == -1)
+                NameText = new UIText("...");
+            else
+            {
+                if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
+                {
+                    Character FormerCharacter = ModContent.GetInstance<DialogueUISystem>().SubSpeaker;
+                    NameText = new UIText(FormerCharacter.Name, 1f, true);
+                }
+                else
+                    NameText = new UIText(CurrentCharacter.Name, 1f, true);
+            }
+            NameText.Width.Pixels = NameBox.Width.Pixels;
+            NameText.HAlign = 0.5f;
+            NameText.Top.Set(15, 0);
+            NameBox.Append(NameText);
         }
-        NameText.Width.Pixels = NameBox.Width.Pixels;
-        NameText.HAlign = 0.5f;
-        NameText.Top.Set(15, 0);
-        NameBox.Append(NameText);
     }
     public override void PostUpdateActive(MouseBlockingUIPanel textbox, FlippableUIImage speaker, FlippableUIImage subSpeaker)
     {
+        DialogueUISystem uiSystem = ModContent.GetInstance<DialogueUISystem>();
+
         float xResolutionScale = Main.screenWidth / 2560f;
         float yResolutionScale = Main.screenHeight / 1440f;
 
-        if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
+        if (uiSystem.swappingStyle)
         {
             if (!TextboxOffScreen(textbox))
             {
@@ -113,12 +125,12 @@ public class DefaultDialogueStyle : DialogueStyle
             }
             else
             {
-                ModContent.GetInstance<DialogueUISystem>().styleSwapped = true;
-                ModContent.GetInstance<DialogueUISystem>().swappingStyle = false;
+                uiSystem.styleSwapped = true;
+                uiSystem.swappingStyle = false;
                 textbox.RemoveAllChildren();
                 textbox.Remove();
 
-                ModContent.GetInstance<DialogueUISystem>().DialogueUIState.SpawnTextBox();
+                uiSystem.DialogueUIState.SpawnTextBox();
             }
         }
         else
@@ -132,20 +144,26 @@ public class DefaultDialogueStyle : DialogueStyle
                     textbox.Top.Pixels = goalHeight;
 
             }
-            float goalLeft = Main.screenWidth / 12f;
-            float goalright = Main.screenWidth - textbox.Width.Pixels - Main.screenWidth / 12f;
 
-            if (ModContent.GetInstance<DialogueUISystem>().speakerRight && textbox.Left.Pixels > 125f)
+            if (uiSystem.CurrentTree.Characters.Length == 0)
+                textbox.Left.Pixels = (Main.screenWidth / 2f) - (textbox.Width.Pixels / 2f);
+            else
             {
-                textbox.Left.Pixels -= (-goalLeft + textbox.Left.Pixels) / 20;
-                if (-goalLeft + textbox.Left.Pixels < 1)
-                    textbox.Left.Pixels = goalLeft;
-            }
-            else if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && textbox.Left.Pixels < 600f)
-            {
-                textbox.Left.Pixels += (goalright - textbox.Left.Pixels) / 20;
-                if (goalright - textbox.Left.Pixels < 1)
-                    textbox.Left.Pixels = goalright;
+                float goalLeft = Main.screenWidth / 12f;
+                float goalright = Main.screenWidth - textbox.Width.Pixels - Main.screenWidth / 12f;
+
+                if (ModContent.GetInstance<DialogueUISystem>().speakerRight && textbox.Left.Pixels > 125f)
+                {
+                    textbox.Left.Pixels -= (-goalLeft + textbox.Left.Pixels) / 20;
+                    if (-goalLeft + textbox.Left.Pixels < 1)
+                        textbox.Left.Pixels = goalLeft;
+                }
+                else if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && textbox.Left.Pixels < 600f)
+                {
+                    textbox.Left.Pixels += (goalright - textbox.Left.Pixels) / 20;
+                    if (goalright - textbox.Left.Pixels < 1)
+                        textbox.Left.Pixels = goalright;
+                }
             }
             #region Button Updates
             DialogueText dialogue = (DialogueText)textbox.Children.Where(c => c.GetType() == typeof(DialogueText)).First();

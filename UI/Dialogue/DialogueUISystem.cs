@@ -145,19 +145,24 @@ public class DialogueUISystem : ModSystem
         Dialogue currentDialogue = CurrentTree.Dialogues[DialogueIndex];
 
         activeExtension = LanguageManager.Instance.ActiveCulture.Name;
-        path = Path.Combine("Localization/Characters", activeExtension, CurrentTree.Characters[currentDialogue.CharacterIndex] + ".json");
+        if (CurrentTree.Characters.Length != 0)
+        {
+            path = Path.Combine("Localization/Characters", activeExtension, CurrentTree.Characters[currentDialogue.CharacterIndex] + ".json");
 
-        // Fall back to english if not found
-        if (!DialogueSource.FileExists(path))
-            path = Path.Combine("Localization/Characters", "en-US", CurrentTree.Characters[currentDialogue.CharacterIndex] + ".json");
+            // Fall back to english if not found
+            if (!DialogueSource.FileExists(path))
+                path = Path.Combine("Localization/Characters", "en-US", CurrentTree.Characters[currentDialogue.CharacterIndex] + ".json");
 
-        // Throw if we cant find english either
-        if (!DialogueSource.FileExists(path))
-            throw new FileNotFoundException($"Could not find the dialog file {path}.");
-
+            // Throw if we cant find english either
+            if (!DialogueSource.FileExists(path))
+                throw new FileNotFoundException($"Could not find the dialog file {path}.");
+        }
         stream = DialogueSource.GetFileStream(path);
 
-        CurrentSpeaker = JsonSerializer.Deserialize<Character>(stream);
+        if (CurrentTree.Characters.Length != 0)
+            CurrentSpeaker = JsonSerializer.Deserialize<Character>(stream);
+        else
+            CurrentSpeaker = null;
 
         stream.Close();
 

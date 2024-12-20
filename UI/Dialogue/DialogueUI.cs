@@ -58,10 +58,12 @@ public class DialogueUIState : UIState
 
             DialogueUISystem uiSystem = ModContent.GetInstance<DialogueUISystem>();
             DialogueStyle style;
-            if (uiSystem.swappingStyle)
+            if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
                 style = (DialogueStyle)Activator.CreateInstance(Type.GetType(uiSystem.SubSpeaker.Style));
-            else
+            else if (uiSystem.CurrentSpeaker != null)
                 style = (DialogueStyle)Activator.CreateInstance(Type.GetType(uiSystem.CurrentSpeaker.Style) ?? typeof(DefaultDialogueStyle));
+            else
+                style = (DialogueStyle)Activator.CreateInstance(typeof(DefaultDialogueStyle));
 
             int LineCount = 0;
 
@@ -129,7 +131,7 @@ public class DialogueUIState : UIState
                 }
                 #endregion
 
-                if(newLine)
+                if (newLine)
                     LineCount++;
 
                 #region Positioning
@@ -173,13 +175,15 @@ public class DialogueUIState : UIState
             SoundStyle talkSound;
             if (Dialogue[dialogueIndex].TalkSoundPath != null)
                 talkSound = new(Dialogue[dialogueIndex].TalkSoundPath, Dialogue[dialogueIndex].TalkVariantCount);
-            else
+            else if (uiSystem.CurrentSpeaker != null)
                 talkSound = new(uiSystem.CurrentSpeaker.TalkSoundPath, uiSystem.CurrentSpeaker.TalkSoundVariants);
+            else
+                talkSound = new("DialogueHelper/UI/Dialogue/TextSounds/Default", 1);
 
             int textDelay = 2;
             if (Dialogue[dialogueIndex].TextDelay > -1)
                 textDelay = Dialogue[dialogueIndex].TextDelay;
-            else if (uiSystem.CurrentSpeaker.TextDelay > -1)
+            else if (uiSystem.CurrentSpeaker != null && uiSystem.CurrentSpeaker.TextDelay > -1)
                 textDelay = uiSystem.CurrentSpeaker.TextDelay;
 
             string FullText = "";
@@ -372,11 +376,13 @@ public class DialogueUIState : UIState
             DialogueStyle style;
             if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
                 style = (DialogueStyle)Activator.CreateInstance(Type.GetType(FormerCharacter.Style));
-            else
+            else if (CurrentCharacter != null)
                 style = (DialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style) ?? typeof(DefaultDialogueStyle));
+            else
+                style = (DialogueStyle)Activator.CreateInstance(typeof(DefaultDialogueStyle));
 
             style.PreUICreate(DialogueIndex);
-            if (CurrentDialogue.CharacterIndex != -1)
+            if (CurrentCharacter != null && CurrentDialogue.CharacterIndex != -1)
             {
                 //Main.NewText("Create Speaker: " + CurrentDialogue.CharacterIndex);
                 CurrentCharacter = ModContent.GetInstance<DialogueUISystem>().CurrentSpeaker;
@@ -473,8 +479,10 @@ public class DialogueUIState : UIState
         DialogueStyle style;
         if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
             style = (DialogueStyle)Activator.CreateInstance(Type.GetType(FormerCharacter.Style));
-        else
+        else if (CurrentCharacter != null)
             style = (DialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style) ?? typeof(DefaultDialogueStyle));
+        else
+            style = (DialogueStyle)Activator.CreateInstance(typeof(DefaultDialogueStyle));
 
         if (ModContent.GetInstance<DialogueUISystem>().isDialogueOpen)
         {
@@ -577,48 +585,52 @@ public class DialogueUIState : UIState
         else
         {
             style.PostUpdateClosing(Textbox, Speaker, SubSpeaker);
-
-            float goalRight = Main.screenWidth + Speaker.Width.Pixels;
-            float goalLeft = -Speaker.Width.Pixels * 2;
-
-            if (Speaker != null)
+            if (CurrentTree.Characters.Length != 0)
             {
-                if (ModContent.GetInstance<DialogueUISystem>().speakerRight && Speaker.Left.Pixels < goalRight)
+                float goalRight = Main.screenWidth + Speaker.Width.Pixels;
+                float goalLeft = -Speaker.Width.Pixels * 2;
+
+                if (Speaker != null)
                 {
-                    Speaker.Left.Pixels += (goalRight - Speaker.Left.Pixels) / 20;
-                    if (goalRight - Speaker.Left.Pixels < 10)
-                        Speaker.Left.Pixels = goalRight;
+                    if (ModContent.GetInstance<DialogueUISystem>().speakerRight && Speaker.Left.Pixels < goalRight)
+                    {
+                        Speaker.Left.Pixels += (goalRight - Speaker.Left.Pixels) / 20;
+                        if (goalRight - Speaker.Left.Pixels < 10)
+                            Speaker.Left.Pixels = goalRight;
+                    }
+                    else if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && Speaker.Left.Pixels > goalLeft)
+                    {
+                        Speaker.Left.Pixels -= (Speaker.Left.Pixels - goalLeft) / 20;
+                        if (Speaker.Left.Pixels - goalLeft < 10)
+                            Speaker.Left.Pixels = goalLeft;
+                    }
                 }
-                else if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && Speaker.Left.Pixels > goalLeft)
+                if (SubSpeaker != null)
                 {
-                    Speaker.Left.Pixels -= (Speaker.Left.Pixels - goalLeft) / 20;
-                    if (Speaker.Left.Pixels - goalLeft < 10)
-                        Speaker.Left.Pixels = goalLeft;
+                    if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels < goalRight)
+                    {
+                        SubSpeaker.Left.Pixels += (goalRight - SubSpeaker.Left.Pixels) / 20;
+                        if (goalRight - SubSpeaker.Left.Pixels < 10)
+                            SubSpeaker.Left.Pixels = goalRight;
+                    }
+                    else if (ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels > goalLeft)
+                    {
+                        SubSpeaker.Left.Pixels -= (goalLeft - SubSpeaker.Left.Pixels) / 20;
+                        if (goalLeft - SubSpeaker.Left.Pixels < 10)
+                            SubSpeaker.Left.Pixels = goalLeft;
+                    }
                 }
+                if
+                (
+                    (Speaker == null || Speaker.Left.Pixels >= goalRight && ModContent.GetInstance<DialogueUISystem>().speakerRight || Speaker.Left.Pixels <= goalLeft && !ModContent.GetInstance<DialogueUISystem>().speakerRight)
+                    &&
+                    (SubSpeaker == null || SubSpeaker.Left.Pixels >= goalRight && !ModContent.GetInstance<DialogueUISystem>().speakerRight || SubSpeaker.Left.Pixels <= goalLeft && ModContent.GetInstance<DialogueUISystem>().speakerRight)
+                    &&
+                    style.TextboxOffScreen(Textbox)
+                )
+                    ModContent.GetInstance<DialogueUISystem>().HideDialogueUI();
             }
-            if (SubSpeaker != null)
-            {
-                if (!ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels < goalRight)
-                {
-                    SubSpeaker.Left.Pixels += (goalRight - SubSpeaker.Left.Pixels) / 20;
-                    if (goalRight - SubSpeaker.Left.Pixels < 10)
-                        SubSpeaker.Left.Pixels = goalRight;
-                }
-                else if (ModContent.GetInstance<DialogueUISystem>().speakerRight && SubSpeaker.Left.Pixels > goalLeft)
-                {
-                    SubSpeaker.Left.Pixels -= (goalLeft - SubSpeaker.Left.Pixels) / 20;
-                    if (goalLeft - SubSpeaker.Left.Pixels < 10)
-                        SubSpeaker.Left.Pixels = goalLeft;
-                }
-            }
-            if
-            (
-                (Speaker == null || Speaker.Left.Pixels >= goalRight && ModContent.GetInstance<DialogueUISystem>().speakerRight || Speaker.Left.Pixels <= goalLeft && !ModContent.GetInstance<DialogueUISystem>().speakerRight)
-                &&
-                (SubSpeaker == null || SubSpeaker.Left.Pixels >= goalRight && !ModContent.GetInstance<DialogueUISystem>().speakerRight || SubSpeaker.Left.Pixels <= goalLeft && ModContent.GetInstance<DialogueUISystem>().speakerRight)
-                &&
-                style.TextboxOffScreen(Textbox)
-            )
+            else if (style.TextboxOffScreen(Textbox))
                 ModContent.GetInstance<DialogueUISystem>().HideDialogueUI();
         }
         counter++;
@@ -694,8 +706,11 @@ public class DialogueUIState : UIState
 
         if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
             style = (DialogueStyle)Activator.CreateInstance(Type.GetType(FormerCharacter.Style));
-        else
+        else if (CurrentCharacter != null)
             style = (DialogueStyle)Activator.CreateInstance(Type.GetType(CurrentCharacter.Style) ?? typeof(DefaultDialogueStyle));
+        else
+            style = (DialogueStyle)Activator.CreateInstance(typeof(DefaultDialogueStyle));
+
         Textbox = new MouseBlockingUIPanel();
         if (ModContent.GetInstance<DialogueUISystem>().swappingStyle)
         {
@@ -717,14 +732,14 @@ public class DialogueUIState : UIState
         {
             if (style.BackgroundColor.HasValue)
                 Textbox.BackgroundColor = style.BackgroundColor.Value;
-            else if (CurrentCharacter.PrimaryColor != null)
+            else if (CurrentCharacter != null && CurrentCharacter.PrimaryColor != null)
                 Textbox.BackgroundColor = CurrentCharacter.GetPrimaryColor();
             else
                 Textbox.BackgroundColor = new Color(73, 94, 171);
 
             if (style.BackgroundBorderColor.HasValue)
                 Textbox.BorderColor = style.BackgroundBorderColor.Value;
-            else if (CurrentCharacter.SecondaryColor != null)
+            else if (CurrentCharacter != null && CurrentCharacter.SecondaryColor != null)
                 Textbox.BorderColor = CurrentCharacter.GetSecondaryColor();
             else
                 Textbox.BorderColor = Color.Black;
