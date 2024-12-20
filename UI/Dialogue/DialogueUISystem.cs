@@ -299,7 +299,7 @@ public class Character
 {
     public string Name { get; set; }
     public Expression[] Expressions { get; set; } =
-    {
+    [
         new Expression(){
             Title = "None",
             Path = "DialogueHelper/UI/Dialogue/CharacterAssets/Nothing",
@@ -307,7 +307,7 @@ public class Character
             FrameRate = 0,
             Loop = false,
         }
-    };
+    ];
     public float Scale { get; set; } = 1f;
     public string Style { get; set; } = "DialogueHelper.UI.Dialogue.DialogueStyles.DefaultDialogueStyle";
     public int TextDelay { get; set; } = -1;
